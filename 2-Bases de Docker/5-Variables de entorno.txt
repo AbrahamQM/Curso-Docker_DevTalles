@@ -1,0 +1,38 @@
+Enlace al hub de docker, para obtener imágenes:
+https://hub.docker.com/
+
+vamos a descargarnos la imagen de postgres
+>>docker pull postgres
+    Using default tag: latest
+    latest: Pulling from library/postgres
+    e4fff0779e6d: Pull complete
+    3dd23fa89c28: Pull complete
+    ...
+
+comprobamos
+    >>docker image ls -a
+        REPOSITORY       TAG       IMAGE ID       CREATED         SIZE
+        postgres         latest    69092dbdec0d   7 days ago      432MB --Esta es la que se acaba de descargar
+        dpage/pgadmin4   latest    3158f8135bcd   5 months ago    472MB
+        postgres         15.3      8769343ac885   12 months ago   412MB --Imagen que usamos en el curso de SQL
+
+En el hub, buscamos la imagen de postgres, y vamos a la parte de como usar:
+""
+How to use this image
+start a postgres instance
+$ docker run --name some-postgres -e POSTGRES_PASSWORD=mysecretpassword -d postgres
+""
+Ese comando se descarga y arranca la instancia de la imagen. 
+
+Como ya lo tengo descargado (y tengo 2 contando con la de el curso SQL), lo modificamos para usarlo
+>>docker container run --name postgres-for-docker-course -e POSTGRES_PASSWORD=mysecretpassword -d 69092dbdec0d
+    f3e2ea0a26d6d29fbcb9e3602a39f08ab835c424194ce5acecab9fa75422f794
+
+Compruebo
+>>docker container ls -a                                                                        
+    CONTAINER ID   IMAGE            COMMAND                  CREATED          STATUS                         PORTS      NAMES
+    f3e2ea0a26d6   69092dbdec0d     "docker-entrypoint.s…"   31 seconds ago   Up 30 seconds                  5432/tcp   postgres-for-docker-course
+    be6ec4ffadf4   dpage/pgadmin4   "/entrypoint.sh"         4 months ago     Exited (0) About an hour ago              pgadmin4
+    c368da3f067e   postgres:15.3    "docker-entrypoint.s…"   4 months ago     Exited (0) About an hour ago              my-database
+
+NOTA: Al inicio del vídeo, se habla sobre lo que son las variables de entorno, pero no las usamos aún.

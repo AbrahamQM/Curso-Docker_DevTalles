@@ -1,0 +1,97 @@
+
+Ejecutamos el comando  de la guia de inicio oficial de docker
+>>docker run -d -p 80:80 docker/getting-started
+    """
+    Unable to find image 'docker/getting-started:latest' locally
+    latest: Pulling from docker/getting-started
+    c158987b0551: Pull complete
+    1e35f6679fab: Pull complete
+    cb9626c74200: Pull complete
+    b6334b6ace34: Pull complete
+    f1d1c9928c82: Pull complete
+    9b6f639ec6ea: Pull complete
+    ee68d3549ec8: Pull complete
+    33e0cbbb4673: Pull complete
+    4f7e34c2de10: Pull complete
+    Digest: sha256:d79336f4812b6547a53e735480dde67f8f8f7071b414fbd9297609ffb989abc1
+    Status: Downloaded newer image for docker/getting-started:latest
+    3c0fa30f9f23126fdc14e762e4a5a842f12c6b083afbf7b5ada4c6f712407f94
+    """
+
+Se inicia localmente un servidor con una guia de inicio en nuestro equipo:
+acceder a localhost en el navegador, para verla.
+
+lo hemos arrancado publicando "-p" el puerto localhost:80 conectado al puerto 80 del contenedor con el protocolo tcp
+>> docker container ls 
+"""
+CONTAINER ID   IMAGE                    COMMAND                  CREATED         STATUS         PORTS                NAMES
+3c0fa30f9f23   docker/getting-started   "/docker-entrypoint.…"   6 minutes ago   Up 6 minutes   0.0.0.0:80->80/tcp   determined_rosalind
+"""
+
+Ejemplo para parar el contenedor, ejecutamos el comando de parar indicando simplemente los 3 primeros caracteres del id
+(tambien se puede usar con el id completo o con nombre)
+>>docker container stop 3c0
+o
+>>docker container stop determined_rosalind
+
+para volver a arrancarlo vale con 
+>>docker container start <nombre del CONTAINER>(ojo, no es el de la imagen)
+
+Elimino los contenedores y las imágenes
+*Borrado de los contenedores
+    1-Dentengo el contenedor que está corriendo:
+    >>docker container stop 623
+        623
+    2-Elimino los contenedores de la imagen del tutorial
+    >>docker container ls -a   
+    """
+        CONTAINER ID   IMAGE                    COMMAND                  CREATED          STATUS                          PORTS     NAMES
+        623604949f03   docker/getting-started   "/docker-entrypoint.…"   13 minutes ago   Exited (0) About a minute ago             quirky_beaver
+        3c0fa30f9f23   docker/getting-started   "/docker-entrypoint.…"   27 minutes ago   Exited (0) 15 minutes ago                 determined_rosalind
+        be6ec4ffadf4   dpage/pgadmin4           "/entrypoint.sh"         4 months ago     Exited (0) 37 minutes ago                 pgadmin4
+        c368da3f067e   postgres:15.3            "docker-entrypoint.s…"   4 months ago     Exited (0) 37 minutes ago                 my-database
+    """
+   >>docker container rm 623 3c0 
+   """
+        623
+        3c0
+   """
+   3-Compruebo
+   >> docker container ls -a      
+   """
+        CONTAINER ID   IMAGE            COMMAND                  CREATED        STATUS                      PORTS     NAMES
+        be6ec4ffadf4   dpage/pgadmin4   "/entrypoint.sh"         4 months ago   Exited (0) 38 minutes ago             pgadmin4
+        c368da3f067e   postgres:15.3    "docker-entrypoint.s…"   4 months ago   Exited (0) 38 minutes ago             my-database
+   """
+*Borrado de las imágenes
+    1-Compruebo las imágenes
+    >>docker image ls -a    
+    """
+        REPOSITORY               TAG       IMAGE ID       CREATED         SIZE
+        dpage/pgadmin4           latest    3158f8135bcd   5 months ago    472MB
+        postgres                 15.3      8769343ac885   12 months ago   412MB
+        docker/getting-started   latest    3e4394f6b72f   20 months ago   47MB
+    """
+    2-Elimino la imagen de docker/getting-started
+    >>docker image rm docker/getting-started
+    """
+        Untagged: docker/getting-started:latest
+        Untagged: docker/getting-started@sha256:d79336f4812b6547a53e735480dde67f8f8f7071b414fbd9297609ffb989abc1
+        Deleted: sha256:3e4394f6b72fccefa2217067a7f7ff84d5d828afa9623867d68fce4f9d862b6c
+        Deleted: sha256:cdc6440a971be2985ce94c7e2e0c2df763b58a2ced4ecdb944fcd9b13e7a2aa4
+        Deleted: sha256:041ac26cd02fa81c8fd73cc616bdeee180de3fd68a649ed1c0339a84cdf7a7c3
+        Deleted: sha256:376baf7ada4b52ef4c110a023fe7185c4c2c090fa24a5cbd746066333ce3bc46
+        Deleted: sha256:d254c9b1e23bad05f5cde233b5e91153a0540fa9a797a580d8a360ad12bf63a9
+        Deleted: sha256:dd5c79fa9b6829fd08ff9943fc1d66bebba3e04246ba394d57c28827fed95af0
+        Deleted: sha256:8d812a075abf60a83013c37f49058c220c9cdf390266952126e7e60041b305dc
+        Deleted: sha256:ff1787ee3dcae843dc7dd1933c49350fc84451cf19ed74f4ea72426e17ee7cd1
+        Deleted: sha256:85ebd294be1553b207ba9120676f4fd140842348ddf1bb5f7602c7a8401f0a13
+        Deleted: sha256:ded7a220bb058e28ee3254fbba04ca90b679070424424761a53a043b93b612bf
+    """
+    3-Compruebo
+    >>docker image ls -a
+    """
+        REPOSITORY       TAG       IMAGE ID       CREATED         SIZE
+        dpage/pgadmin4   latest    3158f8135bcd   5 months ago    472MB
+        postgres         15.3      8769343ac885   12 months ago   412MB
+    """

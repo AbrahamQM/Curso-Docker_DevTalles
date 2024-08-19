@@ -1,0 +1,85 @@
+En este curso vamos a hablar sobre los logs de los contenedores.
+
+Sintaxis del comando:
+docker container logs <container id>
+docker container logs --follow CONTAINER
+--follow o -f: Follows: Para seguir los nuevos logs mostrados
+
+Para esta sección, vamos a usar la imagen oficial de MariaDB que encontraremos en el hub de docker https://hub.docker.com/.
+Usando el buscador nos lleva a esta página https://hub.docker.com/_/mariadb
+Y en la documentación nos informa de como descargar e instanciar la imagen.
+
+
+Usaremos una versión llamada jammy:
+https://hub.docker.com/layers/library/mariadb/jammy/images/sha256-a4a81ab6d190db84b67f286fd0511cdea619a24b63790b3db4fb69d263a5cd37?context=explore
+
+Nos indica que la descarga se realiza usando el comando:
+>>docker pull mariadb:jammy
+    jammy: Pulling from library/mariadb
+    a8b1c5f80c2d: Pull complete
+    b13b8cff7564: Pull complete
+    e5739d28aeee: Pull complete
+    0b3f8ae1fce9: Pull complete
+    61d4eb1159ff: Pull complete
+    a0b237c7c6ae: Pull complete
+    a6321fa47c19: Pull complete
+    12077f74b1db: Pull complete
+    Digest: sha256:e101f9db31916a5d4d7d594dd0dd092fb23ab4f499f1d7a7425d1afd4162c4bc
+    Status: Downloaded newer image for mariadb:jammy
+    docker.io/library/mariadb:jammy
+
+    What's Next?
+    View a summary of image vulnerabilities and recommendations → docker scout quickview mariadb:jammy
+
+
+/////////////////////    TAREA   \\\\\\\\\\\\\\\\\\\\\\
+Ahora Se pone la siguiente tarea que voy a ir rellenando sobre la marcha:
+
+1. Montar la base de datos MARIADB con el siguiente comando:
+"""
+    docker container run `
+    -e MARIADB_RANDOM_ROOT_PASSWORD=yes `
+    -dp 3306:3306 `
+    mariadb:jammy
+"""
+Resultado:    714a2059e29e698aeb727bd45369e761203e69f1f2dd786c7044da1b45bf3cb9
+
+2.Obtener el listado de los contenedores activos
+>> docker container ls
+    CONTAINER ID   IMAGE           COMMAND                  CREATED          STATUS          PORTS                    NAMES
+    714a2059e29e   mariadb:jammy   "docker-entrypoint.s…"   53 seconds ago   Up 53 seconds   0.0.0.0:3306->3306/tcp   thirsty_moser
+
+3.Ejecutar el comando
+"""
+    docker container logs <ID del contenedor>
+"""
+>>docker container logs 714
+    2024-08-19 09:41:58+00:00 [Note] [Entrypoint]: Entrypoint script for MariaDB Server 1:11.3.2+maria~ubu2204 started.
+    2024-08-19 09:41:58+00:00 [Warn] [Entrypoint]: /sys/fs/cgroup/name=systemd:/docker/714a2059e29e698aeb727bd45369e761203e69f1f2dd786c7044da1b45bf3cb9      
+    14:misc:/docker/714a2059e29e698aeb727bd45369e761203e69f1f2dd786c7044da1b45bf3cb9
+    {...}
+
+
+4.Identificar cuál es el password del usuario root en los logs (GENERATED ROOT PASSWORD)
+Línea donde pone el password:
+    2024-08-19 09:42:03+00:00 [Note] [Entrypoint]: GENERATED ROOT PASSWORD: rUI[K@e]59y|`NeVIos!@%sPHLak-.LU
+
+5.Conectarse a MariaDB desde DBeaver o TablePlus user:root pass:El password generado aleatoriamente.
+Datos de la conexión:
+Server host: localhost
+Port: 3306
+Database: mysql
+Username: root
+Password rUI[K@e]59y|`NeVIos!@%sPHLak-.LU
+
+
+/////////////////////   FIN TAREA   \\\\\\\\\\\\\\\\\\\\\\
+
+
+Luego mostramos los logs con -f para que siga imprimiendo los logs, e intentamos una conexión con password errónea (usando Dbeaver)
+Evidentemente el Dbeaver da error de credenciales:
+    (conn=8) Access denied for user 'root'@'172.17.0.1' (using password: YES)
+
+--Además en el log que estamos mostrando por consola, se muestra lo siguiente:
+    2024-08-19  9:57:23 8 [Warning] Access denied for user 'root'@'172.17.0.1' (using password: YES)
+

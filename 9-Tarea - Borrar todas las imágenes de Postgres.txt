@@ -1,0 +1,48 @@
+Eliminar todas la imágenes de postgres (Excepto la que usamos en el curso de SQL)
+Listado de imágenes:
+>> docker image ls             
+    REPOSITORY       TAG             IMAGE ID       CREATED         SIZE
+    postgres         latest          69092dbdec0d   10 days ago     432MB
+    mariadb          jammy           3ba807438681   2 months ago    405MB
+    dpage/pgadmin4   latest          3158f8135bcd   5 months ago    472MB
+    postgres         14-alpine3.17   2b0a15d24a50   8 months ago    242MB
+    postgres         15.3            8769343ac885   12 months ago   412MB
+
+Elimino:
+>> docker image rm -f 690 2b0
+    Untagged: postgres:latest
+    Untagged: postgres@sha256:c62fdb7fd6f519ef425c54760894c74e8d0cb04fbf4f7d3d79aafd86bae24edd
+    Deleted: sha256:69092dbdec0ddd9e1860e67be2c040b83cce9ffec785b2f740f34e8eb43178e5
+    Deleted: sha256:fb713f5e48169ba91831ad3446ef7ad674ed7a5e273561e48a1453390af72c16
+    Deleted: sha256:61ab5ae3501083ec743fc714897c19afa7bdd859eea087c7862acfe0a95c8d3a
+    Deleted: sha256:2c9f5dcf6d4b84999e345ce72ef23b33da44d1f3bcecdb4029b3e70710d8675d
+    Deleted: sha256:b2e67935f068ff551894c91bdae9b04872836d1a270a3434cf6f6621d678c410
+    Deleted: sha256:11e7eb23447ea5012185b1976b2a5b0def9932136fc8a13118dccb5455a4ce2b
+    Deleted: sha256:ab68890ca9a6f630dad90338f9f57941ffb081b32fd59453da4670b22ff25360
+    Deleted: sha256:0e15ae1cce907ce78289be5b53ff0fc4a151ec8a72015eb03ec9834f19aa48e0
+    Deleted: sha256:c387e86451af3440834df2668464d9648008adefb97f3ccfe36a881259cb9783
+    Deleted: sha256:3bdcef18372f02be76e3cba640e1ea837af6386f020f3b0b7cbeb218ae54f12a
+    Deleted: sha256:2fcfc6247b317ca771e2a9413dbf3ba29ee1cb1bc7a89fa336f58fb4832b422e
+    Deleted: sha256:496c9f6f5749ccf26a9b33058c06419b5030ef64dab23a35ea5977d328e77cab
+    Deleted: sha256:c24a2970d631038d28e0e03ec313e4d0e316cba6cc142b8e46774b56c63869a8
+    Deleted: sha256:3b92efb6faf3a205e479a5f77ca663535c3ec2461c035497000a86a5f6833755
+    Deleted: sha256:9853575bc4f955c5892dd64187538a6cd02dba6968eba9201854876a7a257034
+    Untagged: postgres:14-alpine3.17
+    Untagged: postgres@sha256:01edb8f359381bbf01921ed7a6e0ebe8a650d038dff872175a36b283f4081f6f
+    Deleted: sha256:2b0a15d24a5069899dc5d43d6bfa675f79516fe0d22deaa9f1bd8bafe03c64f3
+    Deleted: sha256:b84bc15f5ebe4125b34207f8137f96ef782e834a447751c88c2b59609a2a24a5
+    Deleted: sha256:8d191ea0b51f39bc85dec61b73fa602eacf98760c9a4b914bfd3829fd2af93bf
+    Deleted: sha256:8cbe7d2da5076192cf3fd7f7edbac597818baa539790e0ecbbce09d6eda984c5
+    Deleted: sha256:f686c9dc7920577a652c96b37a015d27617f244befb3e5e12d9416ddf143444f
+    Deleted: sha256:16ccb78db067679a148375fc00293807edcc21a215aa7c72f756cf19e89f2220
+    Deleted: sha256:f464c12b18018006cb78adca04fa398580a0843fb1ac793dc4a579ef1cdafa3a
+    Deleted: sha256:0d8a22f8abdc7cd4c0adf51c18f0e794412e833a6cb61c54dfe3d62ddde7ba1d
+    Deleted: sha256:617df26c9e2bec4e63eed45acaa78b253ac74e1cd0dd74da35b050f3ef707d47
+
+Compruebo
+>> docker image ls
+    REPOSITORY       TAG       IMAGE ID       CREATED         SIZE
+    mariadb          jammy     3ba807438681   2 months ago    405MB
+    dpage/pgadmin4   latest    3158f8135bcd   5 months ago    472MB
+    postgres         15.3      8769343ac885   12 months ago   412MB
+

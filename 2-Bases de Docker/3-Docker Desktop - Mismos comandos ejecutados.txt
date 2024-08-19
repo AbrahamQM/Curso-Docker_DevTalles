@@ -1,0 +1,1 @@
+En este vídeo se hace lo mismo que en los dos anteriores, pero utilizando el docker desktop.

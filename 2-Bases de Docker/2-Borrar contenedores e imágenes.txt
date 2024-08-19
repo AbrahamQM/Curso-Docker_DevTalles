@@ -1,0 +1,131 @@
+Para eliminar el contenedor que hemos descargado y ejecutado:
+Podemos hacerlo directamente desde docker desktop o con comandos:
+
+-Obtener ayuda para los comandos de container:
+
+    docker container --help
+
+    Resultado:
+    """
+        Usage:  docker container COMMAND
+
+        Manage containers
+
+        Commands:
+        attach      Attach local standard input, output, and error streams to a running container
+        commit      Create a new image from a container's changes
+        cp          Copy files/folders between a container and the local filesystem
+        create      Create a new container
+        diff        Inspect changes to files or directories on a container's filesystem
+        exec        Execute a command in a running container
+        export      Export a container's filesystem as a tar archive
+        inspect     Display detailed information on one or more containers
+        kill        Kill one or more running containers
+        logs        Fetch the logs of a container
+        ls          List containers
+        pause       Pause all processes within one or more containers
+        port        List port mappings or a specific mapping for the container
+        prune       Remove all stopped containers
+        rename      Rename a container
+        restart     Restart one or more containers
+        rm          Remove one or more containers
+        run         Create and run a new container from an image
+        start       Start one or more stopped containers
+        stats       Display a live stream of container(s) resource usage statistics
+        stop        Stop one or more running containers
+        top         Display the running processes of a container
+        unpause     Unpause all processes within one or more containers
+        update      Update configuration of one or more containers
+        wait        Block until one or more containers stop, then print their exit codes
+
+        Run 'docker container COMMAND --help' for more information on a command.
+    """
+
+-Ver el listado de los contenedores que tengo arrancados:
+
+    Docker container ls
+
+    """
+    CONTAINER ID   IMAGE            COMMAND                  CREATED        STATUS          PORTS                           NAMES
+    be6ec4ffadf4   dpage/pgadmin4   "/entrypoint.sh"         4 months ago   Up 16 minutes   443/tcp, 0.0.0.0:8080->80/tcp   pgadmin4
+    c368da3f067e   postgres:15.3    "docker-entrypoint.s…"   4 months ago   Up 16 minutes   0.0.0.0:5432->5432/tcp          my-database
+    """
+
+-Ver el listado de TODOS los contenedores que tengo:
+
+    Docker container ls -a
+
+    """
+    CONTAINER ID   IMAGE            COMMAND                  CREATED          STATUS                      PORTS                           NAMES
+    8e9def722e5f   hello-world      "/hello"                 6 minutes ago    Exited (0) 6 minutes ago                                    pedantic_cerf      
+    0b9a898236f4   hello-world      "/hello"                 14 minutes ago   Exited (0) 13 minutes ago                                   sleepy_bohr        
+    be6ec4ffadf4   dpage/pgadmin4   "/entrypoint.sh"         4 months ago     Up 18 minutes               443/tcp, 0.0.0.0:8080->80/tcp   pgadmin4
+    c368da3f067e   postgres:15.3    "docker-entrypoint.s…"   4 months ago     Up 18 minutes               0.0.0.0:5432->5432/tcp          my-database  
+    """
+
+-***Tarea, Eliminar los contenedores de hello world***
+
+No hace falta pararlos antes porque el hello-world se para solo al terminar, Pero habría que pararlos con 
+docker container stop <CONTAINER ID>
+
+    Proceso:
+    """ 
+    Obtengo el listado de contenedores:
+    >>Docker container ls -a
+        CONTAINER ID   IMAGE            COMMAND                  CREATED          STATUS                      PORTS                           NAMES
+        8e9def722e5f   hello-world      "/hello"                 6 minutes ago    Exited (0) 6 minutes ago                                    pedantic_cerf      
+        0b9a898236f4   hello-world      "/hello"                 14 minutes ago   Exited (0) 13 minutes ago                                   sleepy_bohr        
+        be6ec4ffadf4   dpage/pgadmin4   "/entrypoint.sh"         4 months ago     Up 18 minutes               443/tcp, 0.0.0.0:8080->80/tcp   pgadmin4
+        c368da3f067e   postgres:15.3    "docker-entrypoint.s…"   4 months ago     Up 18 minutes               0.0.0.0:5432->5432/tcp          my-database        
+    Elimino los 2 contenedores de hello-world:
+    >>docker container rm 8e9def722e5f 0b9a898236f4
+        8e9def722e5f
+        0b9a898236f4
+    Compruebo el resultado:
+    >>docker container ls -a
+        CONTAINER ID   IMAGE            COMMAND                  CREATED        STATUS          PORTS                           NAMES
+        be6ec4ffadf4   dpage/pgadmin4   "/entrypoint.sh"         4 months ago   Up 23 minutes   443/tcp, 0.0.0.0:8080->80/tcp   pgadmin4
+        c368da3f067e   postgres:15.3    "docker-entrypoint.s…"   4 months ago   Up 23 minutes   0.0.0.0:5432->5432/tcp          my-database
+    """
+
+También se podría haber usado docker container prune, ya que los que quiero eliminar están parados: 
+"prune       Remove all stopped containers"
+usando:
+>>docker container prune
+
+-***Tarea eliminar la imagen hello-world que hemos descargado***
+
+    Compruebo las imágenes existentes:
+    >>docker image ls -a
+        REPOSITORY       TAG       IMAGE ID       CREATED         SIZE
+        dpage/pgadmin4   latest    3158f8135bcd   5 months ago    472MB
+        postgres         15.3      8769343ac885   12 months ago   412MB
+        hello-world      latest    d2c94e258dcb   15 months ago   13.3kB
+    
+    Ayuda para ver sintaxis de "docker image rm"
+    >>docker image rm --help
+        Usage:  docker image rm [OPTIONS] IMAGE [IMAGE...]
+
+        Remove one or more images
+
+        Aliases:
+        docker image rm, docker image remove, docker rmi
+
+        Options:
+        -f, --force      Force removal of the image
+            --no-prune   Do not delete untagged parents
+    
+    Elimino la imagen hello-world 
+    >>docker image rm d2c94e258dcb
+        Untagged: hello-world:latest
+        Untagged: hello-world@sha256:53cc4d415d839c98be39331c948609b659ed725170ad2ca8eb36951288f81b75
+        Deleted: sha256:d2c94e258dcb3c5ac2798d32e1249e42ef01cba4841c2234249495f87264ac5a
+        Deleted: sha256:ac28800ec8bb38d5c35b49d45a6ac4777544941199075dff8c4eb63e093aa81e
+
+    Compruebo el resultado:
+    >>docker image ls -a          
+        REPOSITORY       TAG       IMAGE ID       CREATED         SIZE
+        dpage/pgadmin4   latest    3158f8135bcd   5 months ago    472MB
+        postgres         15.3      8769343ac885   12 months ago   412MB
+
+++Ojo, en lugar de usar los ID, se puede usar el nombre de la imagen o contenedor.
