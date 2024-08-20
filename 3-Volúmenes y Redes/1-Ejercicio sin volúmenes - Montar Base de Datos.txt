@@ -1,0 +1,61 @@
+Instrucciones:
+"""
+Montar la imagen de MariaDB con el tag jammy, publicar en el puerto 3306 del contenedor con el puerto 3306 de nuestro equipo, colocarle el nombre al contenedor de world-db (--name world-db) y definir las siguientes variables de entorno:
+
+MARIADB_USER=example-user
+MARIADB_PASSWORD=user-password
+MARIADB_ROOT_PASSWORD=root-secret-password
+MARIADB_DATABASE=world-db
+Conectarse usando Table Plus o DBeaver a la base de datos con las credenciales del usuario (NO EL ROOT)
+
+Conectarse a la base de datos world-db
+
+Ejecutar el query de creación de tablas e inserción proporcionado "1-world.sql"
+
+Revisar que efectivamente tengamos la data
+"""
+Comando para montar el container con las características indicadas:
+>> docker container run `
+>> -e MARIADB_USER=example-user `
+>> -e MARIADB_PASSWORD=user-password `
+>> -e MARIADB_ROOT_PASSWORD=root-secret-password `
+>> -e MARIADB_DATABASE=world-db `
+>> -dp 3306:3306 `
+>> --name 'world-db' `
+>> mariadb:jammy
+    4423c33e74069fa491b9494d4c046d0251be3c595f6fd8ea3daabea68716df39
+
+Compruebo
+>>docker container ls        
+CONTAINER ID   IMAGE           COMMAND                  CREATED          STATUS         PORTS                    NAMES
+4423c33e7406   mariadb:jammy   "docker-entrypoint.s…"   10 seconds ago   Up 9 seconds   0.0.0.0:3306->3306/tcp   world-db
+
+
+Me conecto a la bbdd de maríadb con:
+Server host: localhost
+Database: world-db
+Port: 3306
+Database: mysql
+Username: example-user
+Password: user-password
+
+Ejecuto el script "1-world.sql"
+
+
+Compruebo que tengo los datos insertados en bbdd mediante DBeaver
+SELECT count(*) FROM country;
+count(*)|
+--------+
+     239|
+
+SELECT count(*) FROM countrylanguage c ;
+count(*)|
+--------+
+     984|
+
+
+Al final del vídeo se pide que eliminemos el contenedor que hemos creado.
+>>docker container rm -f 442         
+    442
+
+    

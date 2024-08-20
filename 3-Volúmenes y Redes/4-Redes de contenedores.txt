@@ -1,0 +1,113 @@
+Link con mas información sobre las redes:
+https://docs.docker.com/engine/tutorials/networkingcontainers/
+
+Comandos disponibles para docker network>>docker network
+>>docker network
+    Usage:  docker network COMMAND
+
+    Manage networks
+
+    Commands:
+    connect     Connect a container to a network
+    create      Create a network
+    disconnect  Disconnect a container from a network
+    inspect     Display detailed information on one or more networks
+    ls          List networks
+    prune       Remove all unused networks
+    rm          Remove one or more networks
+
+
+Comprobamos los contenedores y las redes antes de hacer nada:
+>> docker container ls
+    CONTAINER ID   IMAGE                     COMMAND                  CREATED          STATUS          PORTS                    NAMES
+    e47ab5485832   phpmyadmin:5.2.0-apache   "/docker-entrypoint.…"   17 minutes ago   Up 17 minutes   0.0.0.0:8080->80/tcp     optimistic_mcclintock
+    d07ce56fe158   mariadb:jammy             "docker-entrypoint.s…"   35 minutes ago   Up 35 minutes   0.0.0.0:3306->3306/tcp   world-db
+>>docker network ls
+    NETWORK ID     NAME                     DRIVER    SCOPE
+    7c43667f335d   bridge                   bridge    local
+    106a4607f8c0   docker_compose_default   bridge    local
+    f663cf2a94f0   host                     host      local
+    836a50e85750   none                     null      local
+
+*Creamos la primera red
+Sintaxis "docker network create nombre_de_la_red"
+>>docker network create world_network 
+    c8b1446505df268eb38d36c63fec045474e3197c0f57f689a8d20355c495d2b4
+
+*Comprobamos
+>>docker network ls
+    NETWORK ID     NAME                     DRIVER    SCOPE
+    7c43667f335d   bridge                   bridge    local
+    106a4607f8c0   docker_compose_default   bridge    local
+    f663cf2a94f0   host                     host      local
+    836a50e85750   none                     null      local
+    c8b1446505df   world_network            bridge    local ++Esta es la que hemos creado nueva
+
+**********Conectamos los contenedores de MariaDB y PHPMyAdmin a esa red:***********
+Sintaxis: "docker network connect nombre/id_de_la_red nombre/id_del_contenedor
+
+*conecto el contenedor del servidor phpmyadmin a la red
+>>docker network connect world_network e47
+"sin resultados"
+
+*conecto el contenedor de la bbdd mariadb a la red
+>>docker network connect world_network d07
+"sin resultados"
+
+*Compruebo
+>>docker network inspect world_network    
+[
+    {
+        "Name": "world_network",
+        "Id": "c8b1446505df268eb38d36c63fec045474e3197c0f57f689a8d20355c495d2b4",
+        "Created": "2024-08-19T14:07:29.647060395Z",
+        "Scope": "local",
+        "Driver": "bridge",
+        "EnableIPv6": false,
+        "IPAM": {
+            "Driver": "default",
+            "Options": {},
+            "Config": [
+                {
+                    "Subnet": "172.18.0.0/16",
+                    "Gateway": "172.18.0.1"
+                }
+            ]
+        },
+        "Internal": false,
+        "Attachable": false,
+        "Ingress": false,
+        "ConfigFrom": {
+            "Network": ""
+        },
+        "ConfigOnly": false,
+        "Containers": { ///////+++++++++++++++++AQUI VEMOS LOS CONTENEDORES CONECTADOS A ESTA RED.+++++++++++++++\\\\\
+            "d07ce56fe158e6cf6dc5732ef6797155603dca4600da06e85806411235df91d6": {
+                "Name": "world-db",
+                "EndpointID": "34328a0b31109753712ed8cde49bdfae4a6d4735fd4a0bdd53df941e40a1575f",
+                "MacAddress": "02:42:ac:12:00:03",
+                "IPv4Address": "172.18.0.3/16",
+                "IPv6Address": ""
+            },
+            "e47ab548583211364199f202c093d69cbbbcaa63c994f8f959ff2e33826bb27e": {
+                "Name": "optimistic_mcclintock",
+                "EndpointID": "38d956add88b1dbb731dcf80a8dfbf8ad0d29bab0270e782c1527825900c6217",
+                "MacAddress": "02:42:ac:12:00:02",
+                "IPv4Address": "172.18.0.2/16",
+                "IPv6Address": ""
+            }
+        },
+        "Options": {},
+        "Labels": {}
+    }
+]
+
+**Ahora si podemos conectarnos (que no podíamos en el vídeo anterior 3-PHPMyAdmin) 
+-Usando el servidor phpmyadmin "http://localhost:8080/" 
+-Con las credenciales de la bbdd
+Server: world-db +++++"nombre del container"
+Username: example-user
+Password: user-password
+
+
+OJO: si eliminamos contenedores, estos se eliminan directamente de la red.

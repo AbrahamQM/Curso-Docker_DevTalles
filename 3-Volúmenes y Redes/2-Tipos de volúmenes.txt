@@ -1,0 +1,159 @@
+Tenemos una descripción de los tipos de volúmenes en la hoja de atajos:
+
+-Named Volumes
+Volúmenes con un nombre indicado al crearlo.
+
+-Bind volumes 
+Volúmenes vinculados.
+Permite vincular un fichero del equipo con un fichero del contenedor de docker.
+
+-Anonymous Volumes
+Volúmenes donde sólo se especifica el path del
+contenedor y Docker lo asigna automáticamente
+en el host.
+
+
+
+Creamos un Named Volume
+>>docker volume create world-db-volume 
+    world-db-volume
+++El profesor lo llama world-db, pero le añado lo de volume para que quede mas claro cuando estoy refiriendome 
+++al volumen o cuando es al contenedor.
+
+Compruebo
+>>docker volume ls                    
+    DRIVER    VOLUME NAME
+    local     9dba931b1611517527b3b88f7d3db5f437ce2e7550e7fd626b97ed955eb098ca
+    local     7171f626cd6f73e61fd7455ef48a5ad0fc8196eab4fe00b1eefc2256d12dfa6f
+    local     245896e978c9f581dc37a1b21934bae1e98a175c928ea8e8c5f2b643a4f1f948
+    local     a2d216620477f97527f41fa52395e4e9eedbb265cae65a8b21aa179f4cd42c13
+    local     a6a4eb237f889f925ad0bb29fafba8c55aada2b219040f1eee212579ad54535e
+    local     b6783d320b495163039b0fd67cffd441fa4acfa578a887538014adcab7891c49
+    local     cad9495a332eb850e7ea73a242d0bef2035503ed1ec174ec10358775c5d9c825
+    local     dde82bc30028f3e7952630fb03382d2f60383b27e53528c0ce2244c3424ce7da
+    local     ea799746baf10bb0b8611925ab302c14927f053778b0ce0e95f92af41118fb59
+    local     fce82bc9630187271010a4d23eec93d001f258ba402c634d17611864794da514
+    local     fe7a0ee86bb2e440afe9dca63444f8309056236ff125d37cc8aab998039906bf
+    local     world-db-volume
+
+
+Usamos el volumen creado:
+>> docker container run `
+>> -dp 3306:3306 `
+>> --name 'world-db' `
+>> -e MARIADB_USER=example-user `
+>> -e MARIADB_PASSWORD=user-password `
+>> -e MARIADB_ROOT_PASSWORD=root-secret-password `
+>> -e MARIADB_DATABASE=world-db `
+>> --volume  world-db-volume:/var/lib/mysql `
++++Aqui le indico que volumen usar así:
++++ nombre_del_volumen:ruta_donde_se_guardan_los_datos_de_mariadb para averiguar donde se guardan los datos vamos a la docu
++++ ***https://hub.docker.com/_/mariadb#:~:text=host%20system%20as-,/var/lib/mysql,-inside%20the%20container
+>> mariadb:jammy
+
+Comando final (sin explicaciones) y resultado:
+>> docker container run `
+>> -dp 3306:3306 `
+>> --name 'world-db' `
+>> -e MARIADB_USER=example-user `
+>> -e MARIADB_PASSWORD=user-password `
+>> -e MARIADB_ROOT_PASSWORD=root-secret-password `
+>> -e MARIADB_DATABASE=world-db `
+>> --volume  world-db-volume:/var/lib/mysql `
+>> mariadb:jammy
+    f1821895edfc1523c1bcf6a9826d9b936ab52880e782d849d53c4211f3bd85d0
+
+Listo los contenedores
+>>docker container ls      
+    CONTAINER ID   IMAGE           COMMAND                  CREATED         STATUS         PORTS                    NAMES
+    f1821895edfc   mariadb:jammy   "docker-entrypoint.s…"   2 minutes ago   Up 2 minutes   0.0.0.0:3306->3306/tcp   world-db
+
+Volvemos a DBeaver y creamos la conexión:
+-Server host: localhost
+-Database: world-db
+-Port: 3306
+-Database: mysql
+-Username: example-user
+-Password: user-password
+
+Luego hacemos el volcado de información que tenemos en "1-world.sql"
+
+\\\\\\\\\\\\\\\\ TAREA ////////////////
+Eliminar el contenedor completamente, volver a montarlo indicando el mismo volumen que usamos al crearlo.
+La intención es comprobar que los datos siguen estando, así que yo además arrancaré un nuevo container sin indicarle el volumen.
+Para de esta manera comprobar que si lo creo sin usar el volumen, no hay datos y, 
+que si lo creo indicandole el volumen, los datos almacenados, siguen ahí.
+
+*Elimino el container:
+>>docker container rm -f  f18
+    f18
+
+*Listo los container:
+>> docker container ls        
+    CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
+
+*Vuelvo a crearlo pero SIN INDICARLE EL VOLUMEN:
+>>docker container run `     
+>> -dp 3306:3306 `
+>> --name 'world-db' `
+>> -e MARIADB_USER=example-user `
+>> -e MARIADB_PASSWORD=user-password `
+>> -e MARIADB_ROOT_PASSWORD=root-secret-password `
+>> -e MARIADB_DATABASE=world-db `
+>> mariadb:jammy                             
+    41f03da6ea2f4f818f52f3e15912cee4c69823a95d7e8f23c8a467fbaeeaab80
+
+*Ahora creo otro INDICANDO EL VOLUMEN, (le cambio el puerto de entrada y el nombre para diferenciarlos):
+>>docker container run `     
+>> -dp 3307:3306 `
+>> --name 'world-db_with_volume' ` 
+>> -e MARIADB_USER=example-user `
+>> -e MARIADB_PASSWORD=user-password `
+>> -e MARIADB_ROOT_PASSWORD=root-secret-password `
+>> -e MARIADB_DATABASE=world-db `
+>> --volume  world-db-volume:/var/lib/mysql `
+>> mariadb:jammy
+    dea4ba38eb6f76e80cc501b4d0be7833372e15899685e4fdc3ae822c0e570ca2
+
+
+*Listo los containers:
+>>docker container ls
+    CONTAINER ID   IMAGE           COMMAND                  CREATED              STATUS              PORTS                    NAMES
+    dea4ba38eb6f   mariadb:jammy   "docker-entrypoint.s…"   About a minute ago   Up About a minute   0.0.0.0:3307->3306/tcp   world-db_with_volume
+    41f03da6ea2f   mariadb:jammy   "docker-entrypoint.s…"   4 minutes ago        Up 4 minutes        0.0.0.0:3306->3306/tcp   world-db
+
+*world-db: Compruebo con dbeaver que si me conecto al world-db NO tengo datos:
+SELECT count(*) FROM country;
+    SQL Error [1146] [42S02]: (conn=6) Table 'world-db.country' doesn't exist
+
+*world-db_with_volume: Compruebo con dbeaver que si me conecto al world-db_with_volume SI tengo datos:
+SELECT count(*) FROM country;
+    count(*)|
+    --------+
+        239|
+
+\\\\\\\\\\\\\\\\ FIN TAREA ////////////////
+
+
+**Ya que he creado dos contenedores casi idénticos para comprobar que usando el volumen se persisten los datos
+y que si no lo uso, el contenedor no contiene datos.
+Voy a eliminar ambos containers y a crear solo el world-db conectado al volumen.
+
+>>docker container rm -f dea 41f
+    dea
+    41f
+>>docker container ls
+    CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
+>>docker container run `        
+>> -dp 3306:3306 `
+>> --name 'world-db' `            
+>> -e MARIADB_USER=example-user `
+>> -e MARIADB_PASSWORD=user-password `
+>> -e MARIADB_ROOT_PASSWORD=root-secret-password `
+>> -e MARIADB_DATABASE=world-db `
+>> --volume  world-db-volume:/var/lib/mysql `
+>> mariadb:jammy
+    d07ce56fe158e6cf6dc5732ef6797155603dca4600da06e85806411235df91d6
+
+
+

@@ -1,0 +1,75 @@
+
+Nos aseguramos de tener el contenedor (con datos) corriendo:
+>>docker container ls   
+    CONTAINER ID   IMAGE           COMMAND                  CREATED         STATUS         PORTS                    NAMES
+    d07ce56fe158   mariadb:jammy   "docker-entrypoint.s…"   7 minutes ago   Up 7 minutes   0.0.0.0:3306->3306/tcp   world-db
+
+Vamos a dockerhub y buscamos PHPMyAdmin
+https://hub.docker.com/_/phpmyadmin
+
+El profesor nos indica que usaremos la version con tag 5.2.0-apache
+
+
+Comando (original de la docu) que usaremos para crear un servirod arbitriario de phpmyadmin
+"docker run --name phpmyadmin -d -e PMA_ARBITRARY=1 -p 8080:80 phpmyadmin"
+
+Lo usaremos así:
+>>docker container run `
+>>-d `
+>>-e PMA_ARBITRARY=1 `
+>>-p 8080:80 `
+>>phpmyadmin:5.2.0-apache
+    Unable to find image 'phpmyadmin:5.2.0-apache' locally
+    5.2.0-apache: Pulling from library/phpmyadmin
+    01b5b2efb836: Pull complete
+    45244a9928d1: Pull complete
+    139d4815e950: Pull complete
+    9a420fd884ad: Pull complete
+    1de46a46cfcd: Pull complete
+    9cc46e699e97: Pull complete
+    9a8d67ebc9db: Pull complete
+    dc59c4386191: Pull complete
+    9195cab71d03: Pull complete
+    9eaa1559de60: Pull complete
+    e98ea42e90a6: Pull complete
+    d25586855c63: Pull complete
+    0c7c6d5ce997: Pull complete
+    96e5415e261a: Pull complete
+    1ff2782a8ae8: Pull complete
+    0b85949bbffa: Pull complete
+    ed7aad4fc2fb: Pull complete
+    d22a5530765a: Pull complete
+    Digest: sha256:7c8751488b72255047bdc38ea1e9bf6b33b163a3c15ae276b2ac3c1a633a53c6
+    Status: Downloaded newer image for phpmyadmin:5.2.0-apache
+    e47ab548583211364199f202c093d69cbbbcaa63c994f8f959ff2e33826bb27e
+
+Compruebo los contenedores:
+>>docker container ls   
+    CONTAINER ID   IMAGE                     COMMAND                  CREATED          STATUS          PORTS                    NAMES
+    e47ab5485832   phpmyadmin:5.2.0-apache   "/docker-entrypoint.…"   39 seconds ago   Up 37 seconds   0.0.0.0:8080->80/tcp     optimistic_mcclintock
+    d07ce56fe158   mariadb:jammy             "docker-entrypoint.s…"   18 minutes ago   Up 18 minutes   0.0.0.0:3306->3306/tcp   world-db
+
+Accedemos al servidor de phpmyadmin desde el navegador.
+"http://localhost:8080/"
+
+En las credenciales introducimos las que le pasamos como variables de entorno al contenedor de la bbdd
+Username: example-user
+Password: user-password
+
+En el servidor le vamos a poner el mismo que pusimos en el DBeaver mas el puerto:
+ localhost:3306
+--Ojo esto no funciona porque no hay acceso entre el phpmyadmin y la bbdd
+
+*******Texto literal de la hoja de atajos********
+"""
+Regla de oro:
+Si dos o más contenedores están en la misma
+red, podrán hablar entre sí. Si no lo están, no
+podrán.
+"""
+*************************************************
+
+Y todavía no hemos creado la red para que puedan comunicarse. 
+
+EN EL SIGUIENTE VIDEO CREAREMOS LA RED PARA ESTOS DOS containers PHPMYADMIN Y MARIADB
+

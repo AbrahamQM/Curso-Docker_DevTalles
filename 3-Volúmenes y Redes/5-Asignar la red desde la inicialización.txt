@@ -1,0 +1,126 @@
+Ya que lo volveremos a utilizar:
+
+Comando para correr la base de datos usando ek volumen con los datos almacenados.
+>> docker container run `
+>> -dp 3306:3306 `
+>> --name 'world-db' `
+>> -e MARIADB_USER=example-user `
+>> -e MARIADB_PASSWORD=user-password `
+>> -e MARIADB_ROOT_PASSWORD=root-secret-password `
+>> -e MARIADB_DATABASE=world-db `
+>> --volume  world-db-volume:/var/lib/mysql `
+>> mariadb:jammy
+
+Comando para correr la imagen del servidor PHPMyAdmin
+>>docker container run `
+>>-d `
+>>-e PMA_ARBITRARY=1 `
+>>-p 8080:80 `
+>>phpmyadmin:5.2.0-apache
+
+
+////////////////Enlazar directamente ambos contenedores a una red en un solo comando:\\\\\\\\\\\\\\\\\
+
+Comprobamos los contenedores de las sesiones anteriores:
+>> docker container ls
+    CONTAINER ID   IMAGE                     COMMAND                  CREATED          STATUS          PORTS                    NAMES
+    1654b78ef085   phpmyadmin:5.2.0-apache   "/docker-entrypoint.…"   11 minutes ago   Up 11 minutes   0.0.0.0:8080->80/tcp     stoic_williams
+    4f2480fb1631   mariadb:jammy             "docker-entrypoint.s…"   11 minutes ago   Up 11 minutes   0.0.0.0:3306->3306/tcp   world-db
+
+Paramos y eliminamos esos dos contenedores:
+>> docker rm -f 165 4f2
+
+Comprobamos:
+>>docker container ls 
+    CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
+
+Compruebo las redes:
+>> docker network ls
+    NETWORK ID     NAME                     DRIVER    SCOPE
+    912de51c4dfa   bridge                   bridge    local
+    106a4607f8c0   docker_compose_default   bridge    local
+    f663cf2a94f0   host                     host      local
+    836a50e85750   none                     null      local
+    c8b1446505df   world_network            bridge    local
+
+**NOTA: inspeccionando la red world_network compruebo que ya no tiene ningún contenedor ya que los hemos borrado
+
+
+Como ya tenemos la red c8b1446505df world_network creada, ahora creamos dos nuevos contenedores con los mismos datos
+que usamos anteriormente, 
+--PERO EN ESTE CASO VAMOS A ASIGNARLOS A LA RED A LA MISMA VEZ QUE LO CREAMOS.
+
+Arrancamos el contenedor de la bbdd
+>> docker container run `
+>> -dp 3306:3306 `
+>> --name 'world-db' `
+>> -e MARIADB_USER=example-user `
+>> -e MARIADB_PASSWORD=user-password `
+>> -e MARIADB_ROOT_PASSWORD=root-secret-password `
+>> -e MARIADB_DATABASE=world-db `
+>> --volume  world-db-volume:/var/lib/mysql `
+>> --network world_network ` ++++Es en esta línea donde le indicamos a que red agregarlo.   
+>> phpmyadmin:5.2.0-apache
+    bc26d1140503cfcf32a3e74e5eedd02addcc08946281599318512f15e71ab6c1
+   
+
+
+Arrancamos el contenedor de PHPMyAdmin
+docker container run `
+>>-d `
+>>-e PMA_ARBITRARY=1 `
+>>-p 8080:80 `
+>>--network c8b ` ++++Es en esta línea donde le indicamos a que red agregarlo.
+>>phpmyadmin:5.2.0-apache
+    258096be5aa95abb637726fecec217a816478e67ba04d611e7aa705356143569
+
+**Ahora podemos entrar al servidor de PHPMyAdmin sin problemas de nuevo.
+
+Se pide eliminar los contenedores que hemos creado, el volumen de la bbdd y, la red world_network
+
+>>docker container ls
+    CONTAINER ID   IMAGE                     COMMAND                  CREATED          STATUS          PORTS                    NAMES
+    bc26d1140503   mariadb:jammy             "docker-entrypoint.s…"   9 minutes ago    Up 9 minutes    0.0.0.0:3306->3306/tcp   world-db
+    258096be5aa9   phpmyadmin:5.2.0-apache   "/docker-entrypoint.…"   10 minutes ago   Up 10 minutes   0.0.0.0:8080->80/tcp     inspiring_proskuriakova      
+>> docker container rm -f bc2 258
+    bc2
+    258
+>> docker volume ls
+    DRIVER    VOLUME NAME
+    local     9dba931b1611517527b3b88f7d3db5f437ce2e7550e7fd626b97ed955eb098ca
+    local     7171f626cd6f73e61fd7455ef48a5ad0fc8196eab4fe00b1eefc2256d12dfa6f
+    local     245896e978c9f581dc37a1b21934bae1e98a175c928ea8e8c5f2b643a4f1f948
+    local     86859653571d8b386136fa83db9ac2d12774610e39ac74e2e488f696816503da
+    local     a2d216620477f97527f41fa52395e4e9eedbb265cae65a8b21aa179f4cd42c13
+    local     a6a4eb237f889f925ad0bb29fafba8c55aada2b219040f1eee212579ad54535e
+    local     b6783d320b495163039b0fd67cffd441fa4acfa578a887538014adcab7891c49
+    local     cad9495a332eb850e7ea73a242d0bef2035503ed1ec174ec10358775c5d9c825
+    local     dde82bc30028f3e7952630fb03382d2f60383b27e53528c0ce2244c3424ce7da
+    local     ea799746baf10bb0b8611925ab302c14927f053778b0ce0e95f92af41118fb59
+    local     fce82bc9630187271010a4d23eec93d001f258ba402c634d17611864794da514
+    local     fe7a0ee86bb2e440afe9dca63444f8309056236ff125d37cc8aab998039906bf
+    local     world-db-volume
+>> docker volume rm world-db-volume
+    world-db-volume
+>> docker volume ls       
+    DRIVER    VOLUME NAME
+    local     9dba931b1611517527b3b88f7d3db5f437ce2e7550e7fd626b97ed955eb098ca
+    local     7171f626cd6f73e61fd7455ef48a5ad0fc8196eab4fe00b1eefc2256d12dfa6f
+    local     245896e978c9f581dc37a1b21934bae1e98a175c928ea8e8c5f2b643a4f1f948
+    local     86859653571d8b386136fa83db9ac2d12774610e39ac74e2e488f696816503da
+    local     a2d216620477f97527f41fa52395e4e9eedbb265cae65a8b21aa179f4cd42c13
+    local     a6a4eb237f889f925ad0bb29fafba8c55aada2b219040f1eee212579ad54535e
+    local     b6783d320b495163039b0fd67cffd441fa4acfa578a887538014adcab7891c49
+    local     cad9495a332eb850e7ea73a242d0bef2035503ed1ec174ec10358775c5d9c825
+    local     dde82bc30028f3e7952630fb03382d2f60383b27e53528c0ce2244c3424ce7da
+    local     ea799746baf10bb0b8611925ab302c14927f053778b0ce0e95f92af41118fb59
+    local     fce82bc9630187271010a4d23eec93d001f258ba402c634d17611864794da514
+    local     fe7a0ee86bb2e440afe9dca63444f8309056236ff125d37cc8aab998039906bf
+>> docker network rm world_network
+    world_network
+>> docker network ls              
+    NETWORK ID     NAME                     DRIVER    SCOPE
+    912de51c4dfa   bridge                   bridge    local
+    106a4607f8c0   docker_compose_default   bridge    local
+    f663cf2a94f0   host                     host      local
+    836a50e85750   none                     null      local
