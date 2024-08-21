@@ -1,0 +1,96 @@
+Creacion del container con esa imagen:
+>> docker container run ` 
+>> --name nest-app `   
+>> -w /app `  
+>> -p 80:3000 ` 
+>> -v ${PWD}:/app ` 
+>> node:18.16-alpine3.16 `
+>> sh -c "yarn install && yarn start:dev"
+>> 
+
+Antes de nada vamos al fichero  "directorio de la app del equipo"/nest-graphql/tsconfig.json y añadimos el siguiente objeto
+Para que se reinicie la app al realizar cambios.
+  "watchOptions": {
+    "watchFile": "dynamicPriorityPolling",
+    "watchDirectory": "dynamicPriorityPolling",
+    "excludeDirectories": [
+      "**/node_modules",
+      "dist"
+    ]
+  }
+
+
+Iniciamos de nuevo el contenedor con nuestra app igual que en el vídeo anterior.
+Accedemos a http://localhost/graphql y le ponemos la siguiente query:
+    query ExampleQuery {
+        hello
+        todos{
+            description
+            id
+        }
+    }
+Resultado:
+{
+  "data": {
+    "hello": "Hola Mundo", +++Este dato es importante para la siguiente prueba.
+    "todos": [
+      {
+        "description": "Piedra del Alma",
+        "id": 1
+      },
+      {
+        "description": "Piedra del Espacio",
+        "id": 2
+      },
+      {
+        "description": "Piedra del Poder",
+        "id": 3
+      },
+      {
+        "description": "Piedra del Tiempo",
+        "id": 4
+      },
+      {
+        "description": "Piedra desde el contenedor",  +++Este dato es importante para la siguiente prueba.
+        "id": 5
+      }
+    ]
+  }
+}
+
+
+-Vamos en nuestro "directorio de la app del equipo"/nest-graphql/src/hello-world/hello-world.resolver.ts
+modificamos donde pone 'Hola mundo' Ln8 y lo modificamos por 'Hola Mundo - desde mi equipo'.
+-Vamos en nuestro "directorio de la app del equipo"/nest-graphql/src/todo/todo.service.ts
+modificamos donde pone 'Piedra desde el contenedor' Ln14 y lo modificamos por 'Piedra del Realidad'.
+
+Podemos comprobar que la app se reinicia al sincronizarse los cambios automáticamente y,
+ahora la consulta anterior a la app devuelve:
+{
+  "data": {
+    "hello": "Hola Mundo - desde mi equipo", +++Se ha sincrionizado
+    "todos": [
+      {
+        "description": "Piedra del Alma",
+        "id": 1
+      },
+      {
+        "description": "Piedra del Espacio",
+        "id": 2
+      },
+      {
+        "description": "Piedra del Poder",
+        "id": 3
+      },
+      {
+        "description": "Piedra del Tiempo",
+        "id": 4
+      },
+      {
+        "description": "Piedra del Realidad", +++Se ha sincrionizado
+        "id": 5
+      }
+    ]
+  }
+}
+

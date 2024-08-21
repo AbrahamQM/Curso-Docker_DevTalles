@@ -1,0 +1,42 @@
+Limpiamos todo:
+
+>>docker container ls        
+    CONTAINER ID   IMAGE                   COMMAND                  CREATED             STATUS             PORTS                  NAMES
+    f8b693dc2954   node:18.16-alpine3.16   "docker-entrypoint.s…"   About an hour ago   Up About an hour   0.0.0.0:80->3000/tcp   nest-app
+>> docker container rm -f f8b 
+f8b
+>> docker image ls  
+    REPOSITORY       TAG                IMAGE ID       CREATED         SIZE
+    mariadb          jammy              3ba807438681   3 months ago    405MB
+    dpage/pgadmin4   latest             3158f8135bcd   5 months ago    472MB
+    postgres         15.3               8769343ac885   13 months ago   412MB
+    node             18.16-alpine3.16   725b4a5d6f69   16 months ago   173MB
+    node             16-alpine3.16      88843c71ff11   17 months ago   115MB
+    phpmyadmin       5.2.0-apache       8ec7b60cca6c   18 months ago   510MB
+>> docker image rm 888
+    Untagged: node:16-alpine3.16
+    Untagged: node@sha256:94cc62fc5e7ba88a41ad88fec6545cefd67ee6ed04740412facd537394c07b6c
+    Deleted: sha256:88843c71ff110336441af8ceb68f04c0331e361accf0da9eba413f5976d8c792
+    Deleted: sha256:9a31ad41905a55263c75f4bf4b34a56c0cdea4583ceff8d62dc99a7575f658d7
+    Deleted: sha256:4f0ec0ef38cc5a2b4793e6571b40c3a71ac61a30983c7f4e29ca6f5102e20f12
+    Deleted: sha256:00f3ce4eaa1c6616bf72f48582acd9bcd3009afa528501c468512227dcdab842
+>> docker image rm 725
+    Untagged: node:18.16-alpine3.16
+    Untagged: node@sha256:1eabdb1aa3f6e68558c08501572731db560d10c2194a67d3417103b0a9868693
+    Deleted: sha256:725b4a5d6f6947089b1eb91873acdc98098ed58cdfc0381f8248aaad2600126c
+    Deleted: sha256:6e6e132089d3f5908ec78d8806790395e2d678e1dff637d7bbf7264a0cb1a428
+    Deleted: sha256:2d216b5a47c7a4eefb4da194debd824bfe6a44b1be2e393c8227eb609cfd7e2e
+    Deleted: sha256:95ccd826df6ef1d3b2f04a4c2075104c4f75b4d3c38f3ddab771331d88284997
+    Deleted: sha256:5bc340f6d4f5a3bc999dfbc790a0bdf0920b9103ef794645034de4260ee4e9c8
+>> docker image rm 3ba 
+Untagged: mariadb:jammy
+    Untagged: mariadb@sha256:e101f9db31916a5d4d7d594dd0dd092fb23ab4f499f1d7a7425d1afd4162c4bc
+    Deleted: sha256:3ba807438681ca34ee7714d61f1bfb224a837c97852b9213f95afd3e1e86aa6b
+    Deleted: sha256:b2fed3f0072d6905864952e7722e2963cd9d69d45257f7550f28688d2b9e2fc5
+    Deleted: sha256:78c9a641f9fd4a6e12536ddedfbe7234766aa55f2ef08036b2e5c045341594cb
+    Deleted: sha256:11383139f0a364d4d6904d70484de0dab0aa16b4957cea56704f8f8461104311
+    Deleted: sha256:80c52afc6e1659d1c97d0e407331381ce1d0f544ddd83a915cf5986a7702be4b
+    Deleted: sha256:1bb646ef0d32b7ae2182b222825e8784a736d25dcc0900bfb2f9f5bb1ec212d4
+    Deleted: sha256:ea253d05ee75693704dde5ac9d039fa2cfd85985d58f5345d5c9baef0c5f4122
+    Deleted: sha256:360fd9dfa1db99dcab78a94f4119cced5d33a9e15f6770d396e0af954a5582fb
+    Deleted: sha256:629ca62fb7c791374ce57626d6b8b62c76378be091a0daf1a60d32700b49add7

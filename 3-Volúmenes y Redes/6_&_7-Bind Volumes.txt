@@ -1,0 +1,57 @@
+*Video 6 - Breve explicación de los Bind Volume
+
+Los Bind Volumes nos permiten conectar, la estructura de archivos local del 
+equipo, con carpetas/archivos del contenedor.
+
+
+*Video 7 - Ejercicio -Bind Volume
+
+
+Se pide descargar el archivo de la app de pruebas, desde la siguiente url: https://import.cdn.thinkific.com/643563/courses/2100309/nestgraphqlapp-221207-123302.zip
+
+Queremos hacer todas las instalaciones de de la aplicación y la propia aplicación se ejecuten dentro de un contenedor.
+
+Abrimos la app descargada en un VSC y trabajamos desde su terminal.
+
+Descargamos una imagen de la versión 16-alpine3.16 node desde el DockerHub
+
+Creacion del container con esa imagen:
+>> docker container run `
+>> --name nest-app `   
+>> -w /app `   +++w: working directory ---Le indicamos que queremos trabajar en la ruta ./app
+>> -p 80:3000 ` +++No hacemos -d porque queremos ir viendo como trabaja la aplicación 
+>> -v ${PWD}:/app ` +++Ver explicacion a continuación en ·· 
+>> node:18.16-alpine3.16 ` ++El profesor usa 16-alpine3.16, pero en mi caso yarn da error y tengo que usar 18.16-alpine3.16
+>> sh -c "yarn install && yarn start:dev" ++Le mandamos un comando de shell para que se ejecute dentro de el container 
+    +++Se descarga la imagen, inicia el contenedor, hace la instalación de yarn e inicia la app
+
+··Para crear el Volumen, le indicamos que el nombre será el resultado de el comando pwd (nos devuelve la ruta/filesystem en la que estamos trabajando)
+··Esa carpeta la enlazamos con la ruta /app dentro del contenedor.
+
+Ahora podemos comprobar en el directorio de la app, que aparece reflejada la carpera node_modules y también el yarn.lock.
+Esto es porque hemos enlazado el directorio /app del contenedor en nuestro directorio local del equipo donde esta la app descargada.
+
+También, vemos en la consola el estado de la app:
+    [9:05:03 AM] Starting compilation in watch mode...
+
+    [9:07:04 AM] Found 0 errors. Watching for file changes.
+
+    [Nest] 87  - 08/21/2024, 9:08:20 AM     LOG [NestFactory] Starting Nest application...
+    [Nest] 87  - 08/21/2024, 9:08:20 AM     LOG [InstanceLoader] AppModule dependencies initialized +23ms
+    [Nest] 87  - 08/21/2024, 9:08:20 AM     LOG [InstanceLoader] HelloWorldModule dependencies initialized +1ms
+    [Nest] 87  - 08/21/2024, 9:08:20 AM     LOG [InstanceLoader] TodoModule dependencies initialized +0ms
+    [Nest] 87  - 08/21/2024, 9:08:20 AM     LOG [InstanceLoader] GraphQLSchemaBuilderModule dependencies initialized +3ms
+    [Nest] 87  - 08/21/2024, 9:08:20 AM     LOG [InstanceLoader] GraphQLModule dependencies initialized +2ms
+    [Nest] 87  - 08/21/2024, 9:08:25 AM     LOG [GraphQLModule] Mapped {/graphql, POST} route +4880ms
+    [Nest] 87  - 08/21/2024, 9:08:25 AM     LOG [NestApplication] Nest application successfully started +8ms
+
+*si entramos al localhost:80 la app responde.
+al entrar en http://localhost/graphql podemos interactuar con la app.
+
+Finalmente detenemos la app y eliminamos el contenedor.
+>> docker container ls 
+    CONTAINER ID   IMAGE                   COMMAND                  CREATED             STATUS             PORTS                  NAMES
+    0edfbfec4e31   node:18.16-alpine3.16   "docker-entrypoint.s…"   About an hour ago   Up About an hour   0.0.0.0:80->3000/tcp   nest-app
+>> docker container rm -f 0ed
+    0ed
+

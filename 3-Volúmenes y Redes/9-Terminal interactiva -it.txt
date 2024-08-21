@@ -1,0 +1,346 @@
+
+Documentación de la hoja de atajos:
+"""
+    Iniciar un comando shell dentro del contenedor.
+    -it : Interactive Terminal
+"""
+
+Ejecutamos la terminal interactiva:
+
+Compruebo id del contenedor:
+>>docker container ls       
+    CONTAINER ID   IMAGE                   COMMAND                  CREATED         STATUS         PORTS                  NAMES
+    f8b693dc2954   node:18.16-alpine3.16   "docker-entrypoint.s…"   8 minutes ago   Up 8 minutes   0.0.0.0:80->3000/tcp   nest-app
+
+Ejecuto la terminal interactiva:
+>>docker exec -it f8b /bin/sh   +++Le estamos indicando que ejecute el shell 'sh' que se encuentra dentro del directorio /bin
+    /app # 
+
+Ahora estamos dentro de la terminal del contenedor en la carpeta /app ya que habíamos especificado como ruta de entrada
+al crear el contenedor.
+
+Comprobamos el filesystem de el contenedor sibiendo un nivel:
+>>/app # cd ..
+/ # ls
+    app    bin    dev    etc    home   lib    media  mnt    opt    proc   root   run    sbin   srv    sys    tmp    usr    var
+
+Comprobamos donde se encuentra el shell 'sh'
+/bin # ls
+    arch           chown          ed             gunzip         linux32        mknod          pidof          rm             stty           watch
+    ash            cp             egrep          gzip           linux64        mktemp         ping           rmdir          su             zcat
+    base64         date           false          hostname       ln             more           ping6          run-parts      sync
+    bbconfig       dd             fatattr        ionice         login          mount          pipe_progress  sed            tar
+    busybox        df             fdflush        iostat         ls             mountpoint     printenv       setpriv        touch
+    cat            dmesg          fgrep          ipcalc         lsattr         mpstat         ps             setserial      true
+    chattr         dnsdomainname  fsync          kbd_mode       lzop           mv             pwd            sh             umount
+    chgrp          dumpkmap       getopt         kill           makemime       netstat        reformime      sleep          uname
+    chmod          echo           grep           link           mkdir          nice           rev            stat           usleep
+
+Vemos que se encuentra en ese directorio
+
+Comprobamos la carpeta app (es la que se encuentra vinculada a nuestra carpeta en el equipo)
+/bin # cd ..
+/ # cd app
+/app # ls
+    README.md            nest-cli.json        package.json         test                 tsconfig.json
+    dist                 node_modules         src                  tsconfig.build.json  yarn.lock
+
+Es exactamente igual a lo que tenemos en nuestro equipo.
+
+Entramos en /src para modificar el \src\hello-world\hello-world.resolver.ts dentro del contenedor:
+/app # cd src
+/app/src # cd hello-world
+/app/src/hello-world # ls
+    hello-world.module.ts    hello-world.resolver.ts
+
+-Muestro el estado inicial con 'cat'
+/app/src/hello-world # cat hello-world.resolver.ts
+    import { Float, Query, Resolver, Int, Args } from '@nestjs/graphql';
+
+    @Resolver()
+    export class HelloWorldResolver {
+
+        @Query( () => String, { description: 'Hola Mundo es lo que retorna', name: 'hello' } )
+        helloWorld(): string {
+            return 'Hola Mundo - desde mi equipo';
+        }
+
+        @Query( () => Float, { name: 'randomNumber' } )
+        getRandomNumber(): number {
+            return Math.random() * 100;
+        }
+
+        // randomFromZeroTo
+        @Query( () => Int, { name: 'randomFromZeroTo', description: 'From zero to argument TO (default 6)' } )
+        getRandomFromZeroTo(
+            @Args('to', { nullable: true, type: () => Int } ) to: number = 6
+        ): number {
+            return Math.floor( Math.random() * to );
+        }
+
+    }
+
+-Editamos el fichero con 'vi':
+/app/src/hello-world # vi hello-world.resolver.ts
+y modifico el texto 'Hola Mundo - desde mi equipo' por  'Hola Mundo - modificado desde el terminal interactivo del contenedor'
+
+-Compruebo:
+/app/src/hello-world # cat hello-world.resolver.ts
+    import { Float, Query, Resolver, Int, Args } from '@nestjs/graphql';
+
+    @Resolver()
+    export class HelloWorldResolver {
+
+        @Query( () => String, { description: 'Hola Mundo es lo que retorna', name: 'hello' } )
+        helloWorld(): string {
+            return 'Hola Mundo - modificado desde el terminal interactivo del contenedor';
+        }
+
+        @Query( () => Float, { name: 'randomNumber' } )
+        getRandomNumber(): number {
+            return Math.random() * 100;
+        }
+        
+        // randomFromZeroTo
+        @Query( () => Int, { name: 'randomFromZeroTo', description: 'From zero to argument TO (default 6)' } )
+        getRandomFromZeroTo( 
+            @Args('to', { nullable: true, type: () => Int } ) to: number = 6
+        ): number {
+            return Math.floor( Math.random() * to );
+        }
+
+    }
+
+
+Si me voy a la ruta de la app equivalente a el fichero modificado, puedo comprobar que
+se ha modificado y ahora está idéntido al del contenedor:
+
+Si desde el navegador repito la consulta que hicimos en el víde anterior, commpruebo que el resultado es el esperado:
+Query:
+    query ExampleQuery {
+        hello
+        todos{
+            description
+            id
+        }
+    }
+Resultado:
+    {
+        "data": {
+            "hello": "Hola Mundo - modificado desde el terminal interactivo del contenedor",
+            "todos": [
+            {
+                "description": "Piedra del Alma",
+                "id": 1
+            },
+            {
+                "description": "Piedra del Espacio",
+                "id": 2
+            },
+            {
+                "description": "Piedra del Poder",
+                "id": 3
+            },
+            {
+                "description": "Piedra del Tiempo",
+                "id": 4
+            },
+            {
+                "description": "Piedra del Realidad",
+                "id": 5
+            }
+            ]
+        }
+    }
+
+
+
+///////////// TAREA \\\\\\\\\\\
+Modificar desde la terminal interactiva, el servicio src/todo/todo.service.ts 
+eliminar los elementos con id 3, 4, 5:
+*Me muevo al directorio correcto:
+/app/src/hello-world # cd ..
+/app/src # ls
+    app.module.ts  hello-world    main.ts        schema.gql     todo
+/app/src # cd todo
+/app/src/todo # ls
+    dto               entity            todo.module.ts    todo.resolver.ts  todo.service.ts   types
+*Muestro el contenido del fichero antes de los cambios:
+/app/src/todo # cat todo.service.ts
+    import { Injectable, NotFoundException } from '@nestjs/common';
+    import { CreateTodoInput, UpdateTodoInput } from './dto/inputs';
+    import { Todo } from './entity/todo.entity';
+    import { StatusArgs } from './dto/args/status.args';
+
+    @Injectable()
+    export class TodoService {
+        private todos: Todo[] = [
+            { id: 1, description: 'Piedra del Alma', done: false },
+            { id: 2, description: 'Piedra del Espacio', done: true },
+            { id: 3, description: 'Piedra del Poder', done: false },
+            { id: 4, description: 'Piedra del Tiempo', done: false },
+            { id: 5, description: 'Piedra del Realidad', done: true },
+        ];
+        
+        get totalTodos() {
+            return this.todos.length;
+        }
+
+        get pendingTodos() {
+            return this.todos.filter( todo => todo.done === false ).length;
+        }
+
+        get completedTodos() {
+            return this.todos.filter( todo => todo.done === true ).length;
+        }
+
+        findAll(  statusArgs: StatusArgs ): Todo[] {
+            const { status } = statusArgs;
+            if( status !== undefined ) return this.todos.filter( todo => todo.done === status );
+
+            return this.todos;
+        }
+
+        findOne( id: number ): Todo {
+            const todo = this.todos.find( todo => todo.id === id );
+
+            if ( !todo ) throw new NotFoundException(`Todo with id ${ id } not found`);
+
+            return todo;
+        }
+
+        create( createTodoInput: CreateTodoInput ): Todo {
+            const todo = new Todo();
+            todo.description = createTodoInput.description;
+            todo.id = Math.max( ...this.todos.map( todo=> todo.id ), 0 ) + 1
+
+            this.todos.push( todo );
+
+            return todo;
+        }
+
+        update( id: number, updateTodoInput: UpdateTodoInput ) {
+            const { description, done } = updateTodoInput;
+            const todoToUpdate = this.findOne( id );
+
+            if ( description ) todoToUpdate.description = description;
+            if ( done !== undefined ) todoToUpdate.done = done;
+
+            this.todos = this.todos.map( todo => {
+                return ( todo.id === id ) ? todoToUpdate : todo;
+            });
+
+            return todoToUpdate;
+        }
+
+        delete( id: number ):Boolean {
+            const todo = this.findOne( id );
+
+            this.todos = this.todos.filter( todo => todo.id !== id );
+
+            return true;
+        }
+    }
+
+*Ejecuto el vi y modifico el fichero:
+/app/src/todo # vi todo.service.ts
+
+*Muestro los cambios:
+/app/src/todo # cat todo.service.ts
+    import { Injectable, NotFoundException } from '@nestjs/common';
+    import { CreateTodoInput, UpdateTodoInput } from './dto/inputs';
+    import { Todo } from './entity/todo.entity';
+    import { StatusArgs } from './dto/args/status.args';
+
+    @Injectable()
+    export class TodoService {
+
+        private todos: Todo[] = [
+            { id: 1, description: 'Piedra del Alma', done: false },
+            { id: 2, description: 'Piedra del Espacio', done: true },
+        ];
+
+        get totalTodos() {
+            return this.todos.length;
+        }
+
+        get pendingTodos() {
+            return this.todos.filter( todo => todo.done === false ).length;
+        }
+
+        get completedTodos() {
+            return this.todos.filter( todo => todo.done === true ).length;
+        }
+
+        findAll(  statusArgs: StatusArgs ): Todo[] {
+            const { status } = statusArgs;
+            if( status !== undefined ) return this.todos.filter( todo => todo.done === status );
+
+            return this.todos;
+        }
+
+        findOne( id: number ): Todo {
+            const todo = this.todos.find( todo => todo.id === id );
+
+            if ( !todo ) throw new NotFoundException(`Todo with id ${ id } not found`);
+
+            return todo;
+        }
+
+        create( createTodoInput: CreateTodoInput ): Todo {
+
+            const todo = new Todo();
+            todo.description = createTodoInput.description;
+            todo.id = Math.max( ...this.todos.map( todo=> todo.id ), 0 ) + 1
+
+            this.todos.push( todo );
+
+            return todo;
+        }
+
+        update( id: number, updateTodoInput: UpdateTodoInput ) {
+            const { description, done } = updateTodoInput;
+            const todoToUpdate = this.findOne( id );
+
+            if ( description ) todoToUpdate.description = description;
+            if ( done !== undefined ) todoToUpdate.done = done;
+
+            this.todos = this.todos.map( todo => {
+                return ( todo.id === id ) ? todoToUpdate : todo;
+            });
+
+            return todoToUpdate;
+        }
+
+        delete( id: number ):Boolean {
+            const todo = this.findOne( id );
+
+            this.todos = this.todos.filter( todo => todo.id !== id );
+
+            return true;
+        }
+    }
+
+---------RESULTADO----------:
+*Se reinicia automáticamente la app en el contenedor.
+*Los cambios se reflejan en mi directorio local.
+*Ejecuto la query desde la app abierta en el navegador y el resultado es el esperado:
+    {
+        "data": {
+            "hello": "Hola Mundo - modificado desde el terminal interactivo del contenedor",
+            "todos": [
+            {
+                "description": "Piedra del Alma",
+                "id": 1
+            },
+            {
+                "description": "Piedra del Espacio",
+                "id": 2
+            }
+            ]
+        }
+    }
+
+
+Para salir de la terminal interactiva, escribimos exit:
+/app/src/todo # exit
