@@ -1,0 +1,72 @@
+
+
+Empezamos borrando los contenedores que creamos en la sección anterior:
+
+>> docker container ls                    
+    CONTAINER ID   IMAGE                 COMMAND                  CREATED          STATUS          PORTS                           NAMES
+    0d5f1eb7c886   postgres:15.1         "docker-entrypoint.s…"   29 minutes ago   Up 29 minutes   5432/tcp                        postgres-db
+    0b6fc1331296   dpage/pgadmin4:6.17   "/entrypoint.sh"         33 minutes ago   Up 33 minutes   443/tcp, 0.0.0.0:8080->80/tcp   pgAdmin
+>> docker container rm -f 0d5 0b6
+    0d5
+    0b6
+
+Vamos a emular lo que hicimos en el vídeo anterior pero usando un fichero docker-compose.yml
+
+Creamos un archivo docker-compose dentro de una carperta 
+./2-Docker postgres-pgAdmin/docker-compose.yml
+
+Luego lo vamos a rellenar de la siguiente manera:
+
+version: 'version general del docker compose'
+services:
+    nombre_del_servicio:
+        depends_on:  ++++En caso de tener que esperar a que se levante otro servicio antes.
+            - nombre_del_servicio_del_que_depende
+        container_name: nombre_del_contenedor
+        image: nombre_de_imagen_a_montar
+        volumes:
+            -nombre_del_volumen:directorio_al_que_lo_apunto
+        environment:
+            - nombre_de_variable_de_entorno:valor
+
+    +++++++Repetir con tantos servicios como se necesite.
+volumes:
+    nombre_de_volumenes_que_queremos_que_se_creen:
+        +++++en_caso_de_volúmenes_que_ya_existen_indicar: 
+        external: true +++Ver el docker-compose.yml que hemos creado.
+
+
+Compruebo que no tenemos contenedores corriendo:
+>>  docker container ls           
+    CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
+
+
+Compruebo la ayuda de docker compose con "docker compose --help"
+
+Para arrancar/crear los contenedores que hemos definido en el docker-compose.yml
+Nos vamos a la ruta donde se encuentra con la terminal y ejecutamos:
+>> docker compose up
+++aparecen todos los logs de los diferentes contenedores.
+    [+] Running 4/4
+    ✔ Network 2-dockerpostgres-pgadmin_default       Created                                                                                               0.1s 
+    ✔ Volume "2-dockerpostgres-pgadmin_postgres-db"  Created                                                                                               0.0s 
+    ✔ Container postgres_database                    Created                                                                                               0.1s 
+    ✔ Container pgAdmin                              Created                      
+    {...}
+
+Ya podemos conectarnos a pgadmin desde el navegador.
+
+Luego creamos una bbdd como prueba.
+
+Si listamos los volúmenes que tenemos actualmente:
+>>docker volume ls
+    DRIVER    VOLUME NAME
+    local     2-dockerpostgres-pgadmin_postgres-db
+    local     4e8168e772eb5c3984c9f6a3ac5f0f46c616359268149a823b028f72d9bfa180
+    {...}
+    local     fe7a0ee86bb2e440afe9dca63444f8309056236ff125d37cc8aab998039906bf
+    local     postgres-db
+
+Vemos que se ha creado un volumen que no hemos definido
+    2-dockerpostgres-pgadmin_postgres-db
+

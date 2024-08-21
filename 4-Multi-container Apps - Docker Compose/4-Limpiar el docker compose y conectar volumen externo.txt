@@ -1,0 +1,65 @@
+Seguimos trabajando con el fichero docker compose que tenemos en:
+./2-Docker postgres-pgAdmin/docker-compose.yml
+
+
+Paramos el proceso de varios contenedores que tenemos, simplemente saliendo con (Ctrl+C) 2 veces
+desde la terminal donde está corriendo.
+    - Container pgAdmin  Stopping                                                                                                          0.9s 
+    [+] Killing 2/2
+    - Container pgAdmin  Stopping                                                                                                          1.4s 
+    [+] Stopping 2/1tgres_database  Killed                                                                                                  0.5s 
+    ✔ Container pgAdmin            Stopped                                                                                                 1.4s 
+    ✔ Container postgres_database  Stopped                                                                                                 0.0s 
+    pgAdmin exited with code 0
+    canceled
+
+****Eliminacion del volumen creado automáticamente por docker (debido a nuestro docker-compose actual.)
+Listamos y eliminamos el volumen que ha creado docker automáticamente:
+>> docker volume ls
+    DRIVER    VOLUME NAME
+    local     2-dockerpostgres-pgadmin_postgres-db
+    local     4e8168e772eb5c3984c9f6a3ac5f0f46c616359268149a823b028f72d9bfa180
+    ...
+    local     fe7a0ee86bb2e440afe9dca63444f8309056236ff125d37cc8aab998039906bf
+    local     postgres-db
+>> docker volume rm 2-dockerpostgres-pgadmin_postgres-db
+    Error response from daemon: remove 2-dockerpostgres-pgadmin_postgres-db: volume is in use - [783ebfb39af10846c219361d6aa06c9c456fddcec83fdc03571e10a6997d9a76]  
++++Resolvemos el error eliminando los contenedores asociados: en específico el 783 
+>>docker container rm -f 783
+    783
+>> docker volume rm 2-dockerpostgres-pgadmin_postgres-db
+    2-dockerpostgres-pgadmin_postgres-db
+
+***ya hemos eliminado el volumen creado automáticamente    
+
+Cambiamos el docker compose para indicarle que no cree un nuevo volumen, 
+modificando la parte final del fichero poniendo:
+    volumes:
+    postgres-db:
+        external: true
+
+Eliminamos los contenedores que hemos creado antes, para que al volver a levantar con docker compose, los cambios surjan efecto:
+>> docker container ls -a    
+    CONTAINER ID   IMAGE                 COMMAND                  CREATED          STATUS                       PORTS     NAMES
+    b46a213297c9   dpage/pgadmin4:6.17   "/entrypoint.sh"         36 minutes ago   Exited (137) 2 minutes ago             pgAdmin
+    be6ec4ffadf4   dpage/pgadmin4        "/entrypoint.sh"         4 months ago     Exited (0) 6 hours ago                 pgadmin-SQL-course 
+    c368da3f067e   postgres:15.3         "docker-entrypoint.s…"   4 months ago     Exited (0) 6 hours ago                 my-database-SQL-course
+>> docker container rm -f be6 c368
+    be6
+    c368
+******OJO me he adelantado al profesor, pero la manera correcta de eliminar esos contenedores es ejecutar "docker compose down"
+
+
+
+Levantamos de nuevo el docker-compose 
+
+Introducimos datos en bbdd 
+
+Paramos los contenedores y bajamos el compose
+>>doceker compose down
+    [+] Running 3/3
+    ✔ Container pgAdmin                         Removed                                                                                    0.0s 
+    ✔ Container postgres_database               Removed                                                                                    0.0s 
+    ✔ Network 2-dockerpostgres-pgadmin_default  Removed            
+
+
