@@ -1,0 +1,128 @@
+Empezamos borrando el volumen postgres-db que habíamos creado y usado en sesiones anteriores:
+>> docker volume ls
+    DRIVER    VOLUME NAME
+    {...}
+    local     fe7a0ee86bb2e440afe9dca63444f8309056236ff125d37cc8aab998039906bf
+    local     postgres-db
+>> docker volume rm postgres-db
+    postgres-db
+
+
+***Seguimos trabajando con el fichero docker compose que tenemos en:
+./2-Docker postgres-pgAdmin/docker-compose.yml
+
+Modificamos el docker compose (las líneas anteriores quedan comentadas)
+
+Vamos a mapear el volumen del servicio db(postgres_database) para que conecte con un directorio del pc
+
+-Volume anterior:
+      - postgres-db:/var/lib/postgresql/data
+
+-Bind Volume :
+      - ./postgres:/var/lib/postgresql/data  +++Ahora está apuntando a el directorio del docker-compose y creando una carpeta para los datos de bbdd
+
+Levantamos el docker compose:
+>>docker compose up
+
+Y ahora se crea en el mismo directorio donde está el docker compose (./2-Docker postgres-pgAdmin/docker-compose.yml),
+ahora se crea una carpeta llamada postgres en la cual se almacena la copia de los datos de la bbdd.
+
+
+Sin embargo si consultamos los volúmenes disponibles, no se ha creado nada nuevo, ya que enlaza la carpeta /var/lib/postgresql/data
+directamente con la carpeta ./2-Docker postgres-pgAdmin/postgres de el equipo.
+
+***Accedemos de nuevo al localhost:8080 (PgAdmin), ponemos las credenciales
+
+Creamos una bbdd server de ejemplo conectando a:
+-db Name: ejemplo
+-Host name/adress: postgres_database
+-port: 5432
+-username: postgres
+-password: 123456
+
+Creamos una bd de ejemplo: HeroesDB
+
+Ahora para comprobar que el Bind-volume funciona correctamente bajamos el doceker compose.
+>> docker compose down
+    [+] Running 3/3
+    ✔ Container pgAdmin                         Removed          1.7s 
+    ✔ Container postgres_database               Removed          1.2s 
+     ✔ Network 2-dockerpostgres-pgadmin_default  Removed          0.3s 
+
+Comprobamos que la carpeta local sigue estando ahi con datos.
+
+Volvemos a Modificar el docker-compose.yml, servicio pgAdmin, y le creamos un bind volume para que almacene sus datos:
+Para saber a donde debe apuntar el volumen en el contenedor nos vamos a dockerhub buscando pgadmin para la version exacta que utilizamos:
+Donde pone exactamente cual es el volume del contenedor:
+https://hub.docker.com/layers/dpage/pgadmin4/6.17/images/sha256-b04d64352af918043489fca0d95f2a87480238ac5d071fcafd24d6a38f18389d?context=explore#:~:text=18,var/lib/pgadmin%5D
+
+-Antes:
+  pgAdmin:
+    depends_on:
+      - db
+    container_name: pgAdmin
+    image: dpage/pgadmin4:6.17
+    ports:
+      - "8080:80"
+    environment:
+      - PGADMIN_DEFAULT_PASSWORD=123456
+      - PGADMIN_DEFAULT_EMAIL=superman@google.com
+
+-Después:
+  pgAdmin:
+    depends_on:
+      - db
+    container_name: pgAdmin
+    image: dpage/pgadmin4:6.17
+    volumes:
+      - ./pgAdmin:/var/lib/pgadmin
+    ports:
+      - "8080:80"
+    environment:
+      - PGADMIN_DEFAULT_PASSWORD=123456
+      - PGADMIN_DEFAULT_EMAIL=superman@google.com
+
+Ahora levantamos de nuevo el compose en modo desatendido:
+>>  docker compose up -d
+    [+] Running 3/3
+    ✔ Network 2-dockerpostgres-pgadmin_default  Created                                                                                                          0.1s 
+    ✔ Container postgres_database               Started                                                                                                          0.1s 
+    ✔ Container pgAdmin                         Started                                                                                                          0.1s 
+
+
+Ahora se ha creado una nueva carpeta en el directiorio que le indicamos:
+./2-Docker postgres-pgAdmin/pgadmin/ ...
+
+Creamos un archivo .gitignore y le ponemos de contenido a ignorar:
+pgadmin/
+postgres/
+
+Volvemos a pgadmin en el localhost y no tenemos el servidor anteriormente (postgres_database) ya que en ese momento 
+pgAdmin no tenía ninvún volumen, y por lo cual se eliminan las conexiones creadas.
+
+Volvemos a crear una conexion con postgres_database y, nos aparece la bbdd HeroesDB que creamos antes.
+
+***Bajamos y levantamos el docker compose, para ahora comprobar que los datos de pgAdmin se almacenan correctamente.
+>> docker compose down 
+    [+] Running 3/3
+    ✔ Container pgAdmin                         Removed                                                                                                          2.2s 
+    ✔ Container postgres_database               Removed                                                                                                          0.6s 
+    ✔ Network 2-dockerpostgres-pgadmin_default  Removed                                                                                                          0.2s 
+>> docker compose up -d
+    [+] Running 3/3
+    ✔ Network 2-dockerpostgres-pgadmin_default  Created                                                                                                          0.1s 
+    ✔ Container postgres_database               Started                                                                                                          0.1s 
+    ✔ Container pgAdmin                         Started                                                                
+
+Comprobamos de nuevo el pgAdmin y ahora si tenemos los datos de la conexión ya que pgAdmin tiene correctamente mapeado el volumen.
+
+
+Bajamos el docker compose y terminamos esta sesión.
+>> docker compose down 
+    [+] Running 3/3
+    ✔ Container pgAdmin                         Removed                                                                                                          1.9s 
+    ✔ Container postgres_database               Removed                                                                                                          0.6s 
+    ✔ Network 2-dockerpostgres-pgadmin_default  Removed                                                                                                          0.3s 
+
+
+
