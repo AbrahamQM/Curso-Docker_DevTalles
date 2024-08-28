@@ -1,0 +1,166 @@
+Estado final de el docker-compose.yml de la app con mongoDB en la sesion anterior:
+Finalmente el docker-compose queda así hasta este punto:
+"""
+version: '3'
+
+services:
+  db:
+    container_name: pokemon_db
+    image: mongo:6.0
+    volumes: 
+      - poke-vol:/data/db
+    ports:
+      - 27017:27017
+    restart: always
+
+
+volumes:
+  poke-vol:
+    external: false
+"""
+
+
+//////////Obligar a que las conexiones estén autenticadas:\\\\\\\\\
+
+Buscamos en la docu de dockerhub mongo la parte donde indica como obligar a autenticarse a quienes quieran conectarse o acceder.
+https://hub.docker.com/_/mongo#:~:text=with%20authentication%20enabled%20(-,mongod%20%2D%2Dauth,-).
+
+Por lo que modificamos el docker compose, añadiendo las variables de entorno que nos indica la documentación.
+
+
+--Añadimos un usuario y clave inicial de ejemplo:
+environment:
+    - MONGO_INITDB_ROOT_USERNAME=exampleUser
+    - MONGO_INITDB_ROOT_PASSWORD=123456 
+
+
+--Añadimos un parámetro para obligar a que autentique, que montando el contenedor desde la terminal sería añadiendo --auth:
+***************************OJO DATO IMPORTANTE:********************
+Para que se ejecute un parámatro o comando desde el docker-compose, podemos usar command: ['comando1', ''comando2', ...] 
+Ejemplo en nuestro docker-compose:
+
+command: ['--auth']
+
+Estado del docker-compose:
+"""
+version: '3'
+
+services:
+  db:
+    container_name: pokemon_db
+    image: mongo:6.0
+    volumes: 
+      - poke-vol:/data/db
+    ports:
+      - 27017:27017
+    restart: always
+    environment:
+        - MONGO_INITDB_ROOT_USERNAME=exampleUser
+        - MONGO_INITDB_ROOT_PASSWORD=123456 
+    command: ['--auth']
+
+      
+volumes:
+  poke-vol:
+    external: false
+"""
+
+**NOTA:Hay que eliminar el volumen de la bbdd para que el username y el password que le pasamos tenga efecto o si no, no se inicializaran esos valores:
+>>docker volume ls   
+    DRIVER    VOLUME NAME
+    local     4e8168e772eb5c3984c9f6a3ac5f0f46c616359268149a823b028f72d9bfa180
+    local     6-multi-containerapp-basededatosmongo_poke-vol
+    local     6ed67b6091794bd78f4ba29bbe260ddb981f4a586398e15ffd8880bbd9340f80
+    local     9dba931b1611517527b3b88f7d3db5f437ce2e7550e7fd626b97ed955eb098ca
+    local     22e17d67e6711ca53ecd2d66e0b4c5ba27fc6a4d69cc39694020d9804bbde8f9
+    local     7171f626cd6f73e61fd7455ef48a5ad0fc8196eab4fe00b1eefc2256d12dfa6f
+    local     245896e978c9f581dc37a1b21934bae1e98a175c928ea8e8c5f2b643a4f1f948
+    local     942250eebf02732416c4ab68448f84e9d74f3764b1eb448fa57ca94822e0162c
+    local     70091882fb49778ed7444e2d36d773976a53cfba27db9dc227cfbc30a300d438
+    local     86859653571d8b386136fa83db9ac2d12774610e39ac74e2e488f696816503da
+    local     a2d216620477f97527f41fa52395e4e9eedbb265cae65a8b21aa179f4cd42c13
+    local     a6a4eb237f889f925ad0bb29fafba8c55aada2b219040f1eee212579ad54535e
+    local     b6783d320b495163039b0fd67cffd441fa4acfa578a887538014adcab7891c49
+    local     c82e4b18c6bdf7d7a307f85031e6883e933d3f717825ba227529e8ece7601893
+    local     cad9495a332eb850e7ea73a242d0bef2035503ed1ec174ec10358775c5d9c825
+    local     dde82bc30028f3e7952630fb03382d2f60383b27e53528c0ce2244c3424ce7da
+    local     ea799746baf10bb0b8611925ab302c14927f053778b0ce0e95f92af41118fb59
+    local     fce82bc9630187271010a4d23eec93d001f258ba402c634d17611864794da514
+    local     fe7a0ee86bb2e440afe9dca63444f8309056236ff125d37cc8aab998039906bf
+>> docker volume rm 6-multi-containerapp-basededatosmongo_poke-vol
+    6-multi-containerapp-basededatosmongo_poke-vol
+
+
+Levantamos el contenedor de manera desatendida (detach)
+>>docker compose up -d
+    [+] Running 3/3
+    ✔ Network 6-multi-containerapp-basededatosmongo_default    Created                                                                                                                        0.0s 
+    ✔ Volume "6-multi-containerapp-basededatosmongo_poke-vol"  Created                                                                                                                        0.0s 
+    ✔ Container pokemon_db           
+
+Y al conectarnos de nuevo con TablePlus, conecta correctamente, pero no muestra ninguna bbdd y/o da error ya que tenemos que introducir las credenciales.
+
+Editamos la conexion y le introducimos las credenciales indicadas en el docker compose, mediante la url de conexión:
+"mongodb://exampleUser:123456@localhost:27017"
+
+Ahora al abrir la conexion a bbdd, nos aparecen varias.
+
+
+//////////EVITAR MOSTRAR LAS VARIABLES DE ENTORNO EN EL docker compose\\\\\\\\\\\\\
+Creamos un fichero con nombre .env donde meteremos las credenciales y demas variables a utilizar, EN LA MISMA CARPETA DONDE ESTÁ EL docker-compose.yml
+
+Le introduzco unas credenciales y nombre de bbdd que incluyen 'Env', para que se vea clara la diferencia.
+"""
+MONGO_USERNAME=envUser
+MONGO_PASSWORD=envPassword
+MONGO_DB_NAME=envDatabase
+"""
+
+Ahora enlazo esas variables al docker compose sustituyendo los valores por ${NOMBRE_DE_VARIABLE}:
+"""
+version: '3'
+
+services:
+  db:
+    container_name: ${MONGO_DB_NAME}
+    image: mongo:6.0
+    volumes: 
+      - poke-vol:/data/db
+    ports:
+      - 27017:27017
+    restart: always
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD} 
+    command: ['--auth']
+
+      
+volumes:
+  poke-vol:
+    external: false
+"""
+
+
+Bajamos el docker compose, borramos el volumen y levantamos nuevamente el docker compose:
+>>docker compose down
+    [+] Running 2/2
+    ✔ Container pokemon_db                                   Removed                                                                                                                          0.4s 
+    ✔ Network 6-multi-containerapp-basededatosmongo_default  Removed                                                                                                                          0.2s 
+>> docker volume rm 6-multi-containerapp-basededatosmongo_poke-vol
+    6-multi-containerapp-basededatosmongo_poke-vol
+>> docker compose up -d
+    [+] Running 3/3
+    ✔ Network 6-multi-containerapp-basededatosmongo_default    Created                                                                                                                        0.0s 
+    ✔ Volume "6-multi-containerapp-basededatosmongo_poke-vol"  Created                                                                                                                        0.0s 
+    ✔ Container envDatabase                                    Started    
+
+
+
+Ahora para conectarnos con el anterior usuario dará error, así que hay que actualizar la url indicando las credenciales del fichero .env
+"mongodb://envUser:envPassword@localhost:27017"
+
+
+Si listamos los contenedores, podemos comprobar que lleva el nombre que le pusimos en el fichero .env:
+>> docker container ls 
+    CONTAINER ID   IMAGE       COMMAND                  CREATED         STATUS         PORTS                      NAMES
+    ed621f33e190   mongo:6.0   "docker-entrypoint.s…"   4 minutes ago   Up 4 minutes   0.0.0.0:27017->27017/tcp   envDatabase

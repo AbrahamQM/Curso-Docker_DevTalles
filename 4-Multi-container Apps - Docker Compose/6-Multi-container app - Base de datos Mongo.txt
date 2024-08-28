@@ -1,0 +1,98 @@
+Vamos a trabajar con la ruta 
+./6-Multi-container app - Base de datos Mongo/ 
+Y dentro incluiremos el docker compose con el que trabajaremos.
+
+También trabajaremos con la app que encontraremos en dockerhub klerith/pokemon-nest-app para la cual crearemos la carpeta
+./6-Multi-container app - Base de datos Mongo/POKEMON-APP
+
+ARCHIVO DE VARIABLES DE ENTORNO 
+Lo creamos dentro de la carpeta de pockemon-app y se va a llamar ".env"
+
+Las variables de entorno no se suelen subir a los repositorios, ya que podrían contener credenciales y demás datos sensibles.
+
+
+***Empezamos con el docker-compose:
+
+Rellenamos el fichero:
+En esta ocasion queremos forzar a que docker cree un volumen interno (los que no se encuentran fuera del ambiente del contenedor.), 
+para ello incluimos al final del docker-compose las siguientes líneas.
+"""
+volumes:
+  poke-vol:
+    external: false
+"""
+
+
+/////////////TAREA\\\\\\\\\\\\\\\
+Averiguar la ruta/path donde mongoDB graba sus datos:https://hub.docker.com/_/mongo
+
+1º vamos a dockerhub y buscamos la version de mongoDB que usaremos (mongo:6.0):
+    https://hub.docker.com/layers/library/mongo/6.0/images/sha256-b5489f93d5b80459a1ef03e23e5221c48e0bf8634ae69db9971721fc76329f46?context=explore
+
+2º miramos la documentación en busca del path buscando en la web donde pone "VOLUME":
+https://hub.docker.com/_/mongo#:~:text=Start%20your%20mongo%20container%20like%20this%3A
+"""
+    Create a data directory on a suitable volume on your host system, e.g. /my/own/datadir.
+    Start your mongo container like this:
+        $ docker run --name some-mongo -v /my/own/datadir:/data/db -d mongo
+"""
+
+3º lo añadimos al docker-compose. (por ahora usaremos solo la parte de los datos)
+    volumes: 
+      - poke-vol:/data/db
+
+////////////FIN TAREA\\\\\\\\\\\
+
+Continuamos rellenando el docker-compose 
+- Buscamos el puerto standard de mongoDB: 27017
+- Incluimos la línea "restart: always":
+"""
+Esta opción asegura que el contenedor se reinicie automáticamente en las siguientes situaciones:
+-El contenedor se detiene inesperadamente: Si el contenedor se detiene debido a un error, Docker lo reiniciará automáticamente.
+-El demonio de Docker se reinicia: Si Docker se detiene o se reinicia (por ejemplo, si el sistema operativo se reinicia), Docker 
+también reiniciará el contenedor una vez que esté operativo de nuevo.
+"""
+
+Finalmente el docker-compose queda así hasta este punto:
+"""
+version: '3'
+
+services:
+  db:
+    container_name: pokemon_db
+    image: mongo:6.0
+    volumes: 
+      - poke-vol:/data/db
+    ports:
+      - 27017:27017
+    restart: always
+
+
+volumes:
+  poke-vol:
+    external: false
+"""
+
+
+Levantamos el docker compose:
+>> docker compose up
+
+Nos conectamos a mongo con TablePlus o Dbeaber(no admite mongo salvo pagando)
+Le indicamos el nombre que queramos a la conexion:
+    temporal-pokedb
+La URL de la bbdd es:
+    mongodb://localhost:27017/admin
+
+Comprobamos que se conecta correctamente (no necesita credenciales por ahora) y que el log del docker-compose, añade líneas al conectarnos.
+
+
+Paramos y detenemos el docker-compose:
+    Gracefully stopping... (press Ctrl+C again to force)
+    [+] Stopping 1/1
+    ✔ Container pokemon_db  Stopped                                                                                                                              0.6s 
+    pokemon_db exited with code 0
+    canceled
+>> docker compose down
+    [+] Running 2/2
+    ✔ Container pokemon_db                                   Removed                                                                                             0.0s 
+    ✔ Network 6-multi-containerapp-basededatosmongo_default  Removed    
