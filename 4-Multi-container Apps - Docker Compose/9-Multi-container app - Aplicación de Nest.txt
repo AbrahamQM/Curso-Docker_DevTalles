@@ -85,3 +85,5 @@ Si entramos a el mongo-express (http://localhost:8080/), también podemos compro
 que se ha creaco correctamente la bbdd de pockemon "poke_db".
 
 Sin embargo no podemos abrirla con TablePlus poorque el puerto de la db no está expuesto.
+
+Código fuente de la sección: https://gist.github.com/Klerith/0df06c9aaafeff39e8a6129f6e7d35d9
