@@ -1,0 +1,87 @@
+
+Vamos a añadir y montar otro contenedor/servicio en este caso la App pokemon-nest-app subida por klerith
+https://hub.docker.com/r/klerith/pokemon-nest-app
+
+Mirando la documentacion de docker-hub, añadimos al docker-compose el nuevo servicio: 
+--Ojo como le hemos indicado que la autenticacion es necesaria, usaremos las mismas credenciales y nombre de servidor
+que tenemos en nuestro fichero .env (.\6-Multi-container app - Base de datos Mongo\.env)
+
+"""
+version: '3'
+
+services:
+  db:
+    container_name: ${MONGO_DB_NAME}
+    image: mongo:6.0
+    volumes: 
+      - poke-vol:/data/db
+    # ports:
+    #   - 27017:27017
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD} 
+    command: ['--auth']
+
+  mongo-express: 
+    depends_on:
+      - db
+    image: mongo-express:1.0.0-alpha.4
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGO_USERNAME}
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGO_PASSWORD}
+      ME_CONFIG_MONGODB_SERVER: ${MONGO_DB_NAME}
+    ports:
+      - 8080:8081
+    restart: always
+
+  pocke-app:
+    depends_on:
+      - db
+      - mongo-express
+    image: klerith/pokemon-nest-app:1.0.0
+    environment:
+      MONGODB: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@${MONGO_DB_NAME}:27017
+      DB_NAME: poke_db
+    ports:
+      - 3000:3000
+    restart: always
+      
+volumes:
+  poke-vol:
+    external: false
+"""
+
+Arrancamos el docker-compose y accedemos a la app con una de las url de ejemplo que nos ponen en la documentación.
+"""
+Cargar una semilla con la data inicial
+http://localhost:3000/api/v2/seed⁠
+
+Consultar listado
+http://localhost:3000/api/v2/pokemon?limit=20&offset=40⁠
+"""
+
+>>docker compose up -d
+    [+] Running 9/9
+    ✔ pocke-app 8 layers [⣿⣿⣿⣿⣿⣿⣿⣿]      0B/0B      Pulled                                                                                               45.4s 
+        ✔ 9621f1afde84 Pull complete                                                                                                                        1.6s 
+        ✔ b2ff27170c03 Pull complete                                                                                                                        5.2s 
+        ✔ 857f24243633 Pull complete                                                                                                                        1.0s 
+        ✔ f5234ba59f34 Pull complete                                                                                                                        1.6s 
+        ✔ e09f54a0e125 Pull complete                                                                                                                        1.8s 
+        ✔ 08fdb445aaff Pull complete                                                                                                                        2.4s 
+        ✔ 931c4e4daab4 Pull complete                                                                                                                       10.5s 
+        ✔ 4c3cfc937a62 Pull complete                                                                                                                        3.5s 
+    [+] Running 4/4
+        ✔ Network 6-multi-containerapp-basededatosmongo_default            Created                                                                            0.1s 
+        ✔ Container envDatabase                                            Started                                                                            0.6s 
+        ✔ Container 6-multi-containerapp-basededatosmongo-mongo-express-1  Started                                                                            0.1s 
+        ✔ Container 6-multi-containerapp-basededatosmongo-pocke-app-1      Started                                                                            0.1s
+
+
+Ya tenemos la aplicación arrancada y comprobamos que funciona correctamente.
+
+Si entramos a el mongo-express (http://localhost:8080/), también podemos comprobar 
+que se ha creaco correctamente la bbdd de pockemon "poke_db".
+
+Sin embargo no podemos abrirla con TablePlus poorque el puerto de la db no está expuesto.
