@@ -1,0 +1,135 @@
+Empezamos usando la imagen oficial de mongo-express de Docker hub
+https://hub.docker.com/_/mongo-express
+
+Esta imagen nos va a permitir interactuar con la bbdd de mongo.
+
+En lugar de installarlo con docker pull ... vamos a introducirlo en el docker compose que tenemos en:
+.\6-Multi-container app - Base de datos Mongo\docker-compose.yml
+
+****Estado inicial del docker compose:
+"""
+version: '3'
+
+services:
+  db:
+    container_name: ${MONGO_DB_NAME}
+    image: mongo:6.0
+    volumes: 
+      - poke-vol:/data/db
+    ports:
+      - 27017:27017
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD} 
+    command: ['--auth']
+
+      
+volumes:
+  poke-vol:
+    external: false
+"""
+
+****Estado después de añadir un nuevo servicio en el docker compose:
+
+"""
+version: '3'
+
+services:
+  db:
+    container_name: ${MONGO_DB_NAME}
+    image: mongo:6.0
+    volumes: 
+      - poke-vol:/data/db
+    ports:
+      - 27017:27017
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD} 
+    command: ['--auth']
+
+  mongo-express: 
+    depends_on:
+      - db
+    image: mongo-express:1.0.0-alpha.4
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGO_USERNAME}
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGO_PASSWORD}
+      ME_CONFIG_MONGODB_SERVER: ${MONGO_DB_NAME}
+    ports:
+      - 8080:8081
+    restart: always
+
+      
+volumes:
+  poke-vol:
+    external: false
+"""
+
+
+Luego levantamos el contenedor:
+>>docker compose up -d
+    [+] Running 9/9
+    ✔ mongo-express 8 layers [⣿⣿⣿⣿⣿⣿⣿⣿]      0B/0B      Pulled                                                                                           20.1s 
+        ✔ 6a428f9f83b0 Pull complete                                                                                                                        1.4s 
+        ✔ f2b1fb32259e Pull complete                                                                                                                        3.4s 
+        ✔ 40888f2a0a1f Pull complete                                                                                                                        1.4s 
+        ✔ 4e3cc9ce09be Pull complete                                                                                                                        2.1s 
+        ✔ eaa1898f3899 Pull complete                                                                                                                        2.4s 
+        ✔ ab4078090382 Pull complete                                                                                                                        4.7s 
+        ✔ ae780a42c79e Pull complete                                                                                                                        3.5s 
+        ✔ e60224d64a04 Pull complete                                                                                                                        4.3s 
+    [+] Running 2/2
+    ✔ Container envDatabase                                            Running                                                                            0.0s 
+    ✔ Container 6-multi-containerapp-basededatosmongo-mongo-express-1  Started          
+
+
+Ya podemos acceder a la bbdd desde http://localhost:8080/
+Creamos una bbdd para comprobar que podemos y, verificamos que existe con TablePlus pulsando en el icono "Open database"
+
+Para aumentar la seguridad de la bbdd, dejamos de exponer u ocultamos el puerto de la bbdd comentando las 
+líneas de port dentro de bd del docker-compose, con #
+
+"""
+version: '3'
+
+services:
+  db:
+    container_name: ${MONGO_DB_NAME}
+    image: mongo:6.0
+    volumes: 
+      - poke-vol:/data/db
+    # ports:
+    #   - 27017:27017
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD} 
+    command: ['--auth']
+
+  mongo-express: 
+    depends_on:
+      - db
+    image: mongo-express:1.0.0-alpha.4
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGO_USERNAME}
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGO_PASSWORD}
+      ME_CONFIG_MONGODB_SERVER: ${MONGO_DB_NAME}
+    ports:
+      - 8080:8081
+    restart: always
+
+      
+volumes:
+  poke-vol:
+    external: false
+"""
+
+
+Ahora paramos y levantamos de nuevo el docker-compose y comprobamos que aunque seguimos podiendo acceder desde
+ http://localhost:8080/ , TablePlus ya no es capaz de encontrar bbdd porque el puerto ya no está expuesto.
+
+Mensaje de TablePlus: "No suitable servers found (`serverSelectionTryOnce` set): [connection refused calling hello on 'localhost:27017']"
+
+Paramos el docker-compose y pasamos a la siguiente sesion.
